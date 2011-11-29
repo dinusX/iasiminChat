@@ -1,0 +1,5 @@
+C:\Users\Radu\Desktop\Facultate\C#\Lab8_Chat\iasiminChat\ChatServer\ChatServer\bin\Debug\ChatServer.exe
+C:\Users\Radu\Desktop\Facultate\C#\Lab8_Chat\iasiminChat\ChatServer\ChatServer\bin\Debug\ChatServer.pdb
+C:\Users\Radu\Desktop\Facultate\C#\Lab8_Chat\iasiminChat\ChatServer\ChatServer\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\Radu\Desktop\Facultate\C#\Lab8_Chat\iasiminChat\ChatServer\ChatServer\obj\x86\Debug\ChatServer.exe
+C:\Users\Radu\Desktop\Facultate\C#\Lab8_Chat\iasiminChat\ChatServer\ChatServer\obj\x86\Debug\ChatServer.pdb
