@@ -45,12 +45,14 @@ namespace ChatServer
             if (!File.Exists(@"files\users.xml"))
             {
                 XDocument users = new XDocument();
+                FileStream fs = new FileStream(@"files\users.xml", FileMode.Create);
 
                 if (!Directory.Exists("files"))
                     Directory.CreateDirectory("files");
                 
                 users.Add(new XElement("users"));
-                users.Save(new FileStream(@"files\users.xml", FileMode.Create));
+                users.Save(fs);
+                fs.Close();
             }
         }
 
@@ -92,6 +94,7 @@ namespace ChatServer
         private void SatisfyClient(object cl)
         {
             int command;
+            byte response = 0;
             byte[] bytes = new byte[256];
             TcpClient client = (TcpClient)cl;
             NetworkStream stream = client.GetStream();
@@ -117,40 +120,52 @@ namespace ChatServer
                             string password;
                             XDocument users;
                             XElement newUser;
+                            FileStream fs = new FileStream(@"files\users.xml", FileMode.Open);
 
+                            response = 1;
                             usernameLength = stream.ReadByte();
 
                             stream.Read(bytes, 0, usernameLength);
-                            stream.WriteByte(1);
 
                             username = Encoding.ASCII.GetString(bytes, 0, usernameLength);
+                            response = 2;
                             passwordLength = stream.ReadByte();
 
                             stream.Read(bytes, 0, passwordLength);
-                            stream.WriteByte(1);
 
+                            response = 3;
                             password = Encoding.ASCII.GetString(bytes, 0, passwordLength);
-                            users = XDocument.Load(new FileStream(@"files\users.xml", FileMode.Open));
+                            users = XDocument.Load(fs);
+                            fs.Close();
+                            fs.Dispose();
                             usernameExists = 
                                 (
-                                    from user in users.Element("users").Elements()
+                                    from user in users.Root.Elements()
                                     where user.Attribute("username").Value == username
                                     select user.Attribute("username").Value
                                 )
                                 .Any(user => user == username);
 
-                            if (users.Element("nodes").Elements().Count() > 0)
-                                lastUserID = int.Parse(users.Element("nodes").Elements().Last().Attribute("id").Value);
                             if (usernameExists)
                                 break;
+                            else
+                                response = 0;
+
+                            if (users.Root.Elements().Count() > 0)
+                                lastUserID = int.Parse(users.Root.Elements().Last().Attribute("id").Value);
 
                             newUser = new XElement("user");
 
                             newUser.SetAttributeValue("id", (lastUserID + 1).ToString());
                             newUser.SetAttributeValue("username", username);
                             newUser.SetAttributeValue("password", password);
-                            users.Element("user").Add(newUser);
-                            users.Save(new FileStream(@"files\users.xml", FileMode.Truncate));
+                            users.Root.Add(newUser);
+
+                            fs = new FileStream(@"files\users.xml", FileMode.Truncate);
+                            
+                            users.Save(fs);
+                            fs.Close();
+                            fs.Dispose();
 
                             Console.WriteLine("Recieved username: {0}", username);
                             Console.WriteLine("Recieved password: {0}", password);
@@ -186,7 +201,7 @@ namespace ChatServer
                 Console.WriteLine();
 
                 rwl.ReleaseLock();
-                stream.WriteByte(0);
+                stream.WriteByte(response);
             }
 
             client.Close();
