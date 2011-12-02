@@ -7,6 +7,7 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Xml.Linq;
 
 namespace ChatServer
 {
@@ -40,6 +41,17 @@ namespace ChatServer
                 }
             }
             while (!isAvailable);
+
+            if (!File.Exists(@"files\users.xml"))
+            {
+                XDocument users = new XDocument();
+
+                if (!Directory.Exists("files"))
+                    Directory.CreateDirectory("files");
+                
+                users.Add(new XElement("users"));
+                users.Save(new FileStream(@"files\users.xml", FileMode.Create));
+            }
         }
 
         public void Run()
@@ -97,10 +109,14 @@ namespace ChatServer
                 {
                     case 1: //Sign up
                         {
+                            bool usernameExists;
                             int usernameLength;
                             int passwordLength;
+                            int lastUserID = -1;
                             string username;
                             string password;
+                            XDocument users;
+                            XElement newUser;
 
                             usernameLength = stream.ReadByte();
 
@@ -108,21 +124,42 @@ namespace ChatServer
                             stream.WriteByte(1);
 
                             username = Encoding.ASCII.GetString(bytes, 0, usernameLength);
-
-                            Console.WriteLine("Recieved username: {0}", username);
-
                             passwordLength = stream.ReadByte();
 
                             stream.Read(bytes, 0, passwordLength);
                             stream.WriteByte(1);
 
                             password = Encoding.ASCII.GetString(bytes, 0, passwordLength);
+                            users = XDocument.Load(new FileStream(@"files\users.xml", FileMode.Open));
+                            usernameExists = 
+                                (
+                                    from user in users.Element("users").Elements()
+                                    where user.Attribute("username").Value == username
+                                    select user.Attribute("username").Value
+                                )
+                                .Any(user => user == username);
 
+                            if (users.Element("nodes").Elements().Count() > 0)
+                                lastUserID = int.Parse(users.Element("nodes").Elements().Last().Attribute("id").Value);
+                            if (usernameExists)
+                                break;
+
+                            newUser = new XElement("user");
+
+                            newUser.SetAttributeValue("id", (lastUserID + 1).ToString());
+                            newUser.SetAttributeValue("username", username);
+                            newUser.SetAttributeValue("password", password);
+
+                            Console.WriteLine("Recieved username: {0}", username);
                             Console.WriteLine("Recieved password: {0}", password);
                         }
 
                         break;
                     case 2: //Sign in
+                        {
+
+                        }
+
                         break;
                     case 3: //Sign out
                         break;
