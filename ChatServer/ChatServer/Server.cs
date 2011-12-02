@@ -149,6 +149,8 @@ namespace ChatServer
                             newUser.SetAttributeValue("id", (lastUserID + 1).ToString());
                             newUser.SetAttributeValue("username", username);
                             newUser.SetAttributeValue("password", password);
+                            users.Element("user").Add(newUser);
+                            users.Save(new FileStream(@"files\users.xml", FileMode.Truncate));
 
                             Console.WriteLine("Recieved username: {0}", username);
                             Console.WriteLine("Recieved password: {0}", password);
