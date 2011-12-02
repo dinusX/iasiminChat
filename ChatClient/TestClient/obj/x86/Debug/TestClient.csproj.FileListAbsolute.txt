@@ -1,0 +1,7 @@
+c:\users\dinu\documents\visual studio 2010\Projects\ChatClient\TestClient\bin\Debug\TestClient.exe
+c:\users\dinu\documents\visual studio 2010\Projects\ChatClient\TestClient\bin\Debug\TestClient.pdb
+c:\users\dinu\documents\visual studio 2010\Projects\ChatClient\TestClient\bin\Debug\ChatClient.dll
+c:\users\dinu\documents\visual studio 2010\Projects\ChatClient\TestClient\bin\Debug\ChatClient.pdb
+c:\users\dinu\documents\visual studio 2010\Projects\ChatClient\TestClient\obj\x86\Debug\ResolveAssemblyReference.cache
+c:\users\dinu\documents\visual studio 2010\Projects\ChatClient\TestClient\obj\x86\Debug\TestClient.exe
+c:\users\dinu\documents\visual studio 2010\Projects\ChatClient\TestClient\obj\x86\Debug\TestClient.pdb
