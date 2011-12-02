@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -15,6 +16,7 @@ namespace ChatServer
         private IPAddress localIP = IPAddress.Parse("127.0.0.1");
         private Random random = new Random();
         private TcpListener server;
+        private ReaderWriterLock rwl = new ReaderWriterLock();
 
         public Server()
         {
@@ -47,7 +49,7 @@ namespace ChatServer
                 server = new TcpListener(this.localIP, this.port);
 
                 server.Start(1000);
-                Console.WriteLine("Server started running at {0}:{1}", this.localIP, this.port);
+                Console.WriteLine("Server started running at {0}:{1}\n", this.localIP, this.port);
 
                 while (true)
                 {
@@ -77,9 +79,76 @@ namespace ChatServer
 
         private void SatisfyClient(object cl)
         {
+            int command;
+            byte[] bytes = new byte[256];
             TcpClient client = (TcpClient)cl;
+            NetworkStream stream = client.GetStream();
+
+            command = stream.ReadByte();
+
+            rwl.AcquireWriterLock(1000);
 
             Console.WriteLine("Accepted client from: {0}", client.Client.RemoteEndPoint);
+            Console.WriteLine("Command: {0}", bytes[0]);
+
+            try
+            {
+                switch (command)
+                {
+                    case 1: //Sign up
+                        {
+                            int usernameLength;
+                            int passwordLength;
+                            string username;
+                            string password;
+
+                            usernameLength = stream.ReadByte();
+
+                            stream.Read(bytes, 0, usernameLength);
+                            stream.WriteByte(1);
+
+                            username = Encoding.ASCII.GetString(bytes, 0, usernameLength);
+
+                            Console.WriteLine("Recieved username: {0}", username);
+
+                            passwordLength = stream.ReadByte();
+
+                            stream.Read(bytes, 0, passwordLength);
+                            stream.WriteByte(1);
+
+                            password = Encoding.ASCII.GetString(bytes, 0, passwordLength);
+
+                            Console.WriteLine("Recieved password: {0}", password);
+                        }
+
+                        break;
+                    case 2: //Sign in
+                        break;
+                    case 3: //Sign out
+                        break;
+                    /*
+                     * case 4: //Change status message
+                     *     break;
+                     */
+                    default:
+                        break;
+                }
+            }
+            catch (DecoderFallbackException dfe) { Console.WriteLine("DecodeFallbackException: {0}", dfe); }
+            catch (ArgumentOutOfRangeException aoore) { Console.WriteLine("ArgumentOutOfRangeException: {0}", aoore); }
+            catch (ArgumentNullException ane) { Console.WriteLine("ArgumentNullException: {0}", ane); }
+            catch (ArgumentException ae) { Console.WriteLine("ArgumentException: {0}", ae); }
+            catch (ObjectDisposedException ode) { Console.WriteLine("ObjectDisposedException: {0}", ode); }
+            catch (IOException ioe) { Console.WriteLine("IOException: {0}", ioe); }
+            catch (NotSupportedException nse) { Console.WriteLine("NotSupportedException: {0}", nse); }
+            catch (Exception e) { Console.WriteLine("Exception: {0}", e); }
+            finally
+            {
+                Console.WriteLine();
+
+                rwl.ReleaseLock();
+                stream.WriteByte(0);
+            }
 
             client.Close();
         }
