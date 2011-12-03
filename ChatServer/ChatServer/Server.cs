@@ -94,34 +94,148 @@ namespace ChatServer
         private void SatisfyClient(object cl)
         {
             int command;
+            int responseLength = 0;
+            int usernameLength;
+            int passwordLength;
             byte response = 0;
             byte[] bytes = new byte[256];
+            string username;
+            string password;
+            string responseMessage = "";
             TcpClient client = (TcpClient)cl;
             NetworkStream stream = client.GetStream();
-
+            FileStream fs;
+            XDocument users;
+            XDocument details;
+            
+            Console.WriteLine("Accepted client from: {0}", client.Client.RemoteEndPoint);
+            
             command = stream.ReadByte();
 
             rwl.AcquireWriterLock(1000);
-
-            Console.WriteLine("Accepted client from: {0}", client.Client.RemoteEndPoint);
             Console.WriteLine("Command: {0}", bytes[0]);
-
+            
             try
             {
                 switch (command)
                 {
-                    case 1: //Sign up
+                    case 1: //Sign in
+                        {
+                            IEnumerable<string> friendIDs;
+                            XElement user = null;
+                            XElement listItem = null;
+                            XDocument friend = null;
+                            XDocument list = new XDocument();
+
+                            usernameLength = stream.ReadByte();
+
+                            stream.Read(bytes, 0, usernameLength);
+
+                            username = Encoding.ASCII.GetString(bytes, 0, usernameLength);
+                            passwordLength = stream.ReadByte();
+
+                            stream.Read(bytes, 0, passwordLength);
+
+                            password = Encoding.ASCII.GetString(bytes, 0, passwordLength);
+                            fs = new FileStream(@"files\users.xml", FileMode.Open);
+                            users = XDocument.Load(fs);
+                            
+                            fs.Close();
+                            fs.Dispose();
+
+                            try
+                            {
+                                user =
+                                (
+                                    from usr in users.Root.Elements()
+                                    where usr.Attribute("username").Value == username
+                                    select usr
+                                )
+                                .First();
+                            }
+                            catch 
+                            {
+                                response = 1; 
+                                
+                                break;
+                            }
+
+                            if (user.Element("status").Attribute("state").Value == "online")
+                            {
+                                response = 2;
+                             
+                                break;
+                            }
+                            if (user.Attribute("password").Value != password)
+                            {
+                                response = 3;
+
+                                break;
+                            }
+
+                            fs = new FileStream(@"files\details\" + user.Attribute("id").Value + ".xml", FileMode.Open);
+                            details = XDocument.Load(fs);
+
+                            fs.Close();
+                            fs.Dispose();
+                            list.Add(new XElement("friends"));
+
+                            friendIDs = 
+                                from frnd in details.Root.Element("friends").Elements()
+                                select frnd.Attribute("id").Value;
+
+                            foreach (string id in friendIDs)
+                            {
+                                user = users.Root.Elements().Single(usr => usr.Attribute("id").Value == id);
+                                listItem = new XElement(user.Attribute("username").Value, new XElement("status"));
+
+                                if (user.Element("status").Attribute("state").Value == "offline")
+                                {
+                                    listItem.Element("status").SetAttributeValue("state", "offline");
+                                    list.Root.Add(listItem);
+
+                                    continue;
+                                }
+
+                                listItem.Element("status").SetAttributeValue("state", "online");
+                                listItem.Element("status").Value = user.Element("state").Value;
+
+                                fs = new FileStream(@"files\details\" + id + ".xml", FileMode.Open);
+                                friend = XDocument.Load(fs);
+
+                                fs.Close();
+                                fs.Dispose();
+                                listItem.Add(new XElement("last_address_used"));
+                                listItem.Element("last_address_used").SetAttributeValue("ip_address", friend.Root.Element("last_address_used").Attribute("ip_address").Value);
+                                listItem.Element("last_address_used").SetAttributeValue("port", friend.Root.Element("last_address_used").Attribute("port").Value);
+                                list.Root.Add(listItem);
+
+                                friend = null;
+                                listItem = null;
+                                user = null;
+                            }
+
+                            responseMessage = list.ToString(SaveOptions.DisableFormatting);
+                            responseLength = responseMessage.Length;
+                        }
+
+                        break;
+                    case 2: //Sign out
+                        {
+                            stream.WriteByte(0);
+                            client.Close();
+
+                            //notify friends
+                        }
+
+                        break;
+                    case 3: //Sign up
                         {
                             bool usernameExists;
-                            int usernameLength;
-                            int passwordLength;
                             int lastUserID = -1;
-                            string username;
-                            string password;
-                            XDocument users;
+                            IPEndPoint remoteEndPoint;
                             XElement newUser;
-                            FileStream fs = new FileStream(@"files\users.xml", FileMode.Open);
-
+                            
                             response = 1;
                             usernameLength = stream.ReadByte();
 
@@ -135,16 +249,18 @@ namespace ChatServer
 
                             response = 3;
                             password = Encoding.ASCII.GetString(bytes, 0, passwordLength);
+                            fs = new FileStream(@"files\users.xml", FileMode.Open);
                             users = XDocument.Load(fs);
-                            fs.Close();
-                            fs.Dispose();
-                            usernameExists = 
+                            usernameExists =
                                 (
                                     from user in users.Root.Elements()
                                     where user.Attribute("username").Value == username
                                     select user.Attribute("username").Value
                                 )
                                 .Any(user => user == username);
+
+                            fs.Close();
+                            fs.Dispose();
 
                             if (usernameExists)
                                 break;
@@ -159,11 +275,30 @@ namespace ChatServer
                             newUser.SetAttributeValue("id", (lastUserID + 1).ToString());
                             newUser.SetAttributeValue("username", username);
                             newUser.SetAttributeValue("password", password);
+                            newUser.Add(new XElement("status"));
+                            newUser.Element("status").SetAttributeValue("state", "online");
                             users.Root.Add(newUser);
 
                             fs = new FileStream(@"files\users.xml", FileMode.Truncate);
-                            
+
                             users.Save(fs);
+                            fs.Close();
+                            fs.Dispose();
+
+                            if (!Directory.Exists(@"files\details"))
+                                Directory.CreateDirectory(@"files\details");
+
+                            fs = new FileStream(@"files\details\" + (lastUserID + 1).ToString() + ".xml", FileMode.Create);
+                            details = new XDocument();
+                            remoteEndPoint = client.Client.RemoteEndPoint as IPEndPoint;
+
+                            details.Add(new XElement("details"));
+                            details.Root.Add(new XElement("last_address_used"));
+                            details.Root.Add(new XElement("friends"));
+                            details.Root.Add(new XElement("offline_messages"));
+                            details.Root.Element("last_address_used").SetAttributeValue("ip_address", remoteEndPoint.Address);
+                            details.Root.Element("last_address_used").SetAttributeValue("port", remoteEndPoint.Port);
+                            details.Save(fs);
                             fs.Close();
                             fs.Dispose();
 
@@ -171,14 +306,6 @@ namespace ChatServer
                             Console.WriteLine("Recieved password: {0}", password);
                         }
 
-                        break;
-                    case 2: //Sign in
-                        {
-
-                        }
-
-                        break;
-                    case 3: //Sign out
                         break;
                     /*
                      * case 4: //Change status message
@@ -202,9 +329,23 @@ namespace ChatServer
 
                 rwl.ReleaseLock();
                 stream.WriteByte(response);
-            }
 
-            client.Close();
+                if (command == 1 && response == 0)
+                {
+                    bytes = BitConverter.GetBytes(responseLength);
+
+                    if (BitConverter.IsLittleEndian)
+                        Array.Reverse(bytes);
+
+                    stream.Write(bytes, 0, bytes.Length);
+
+                    bytes = Encoding.ASCII.GetBytes(responseMessage);
+
+                    stream.Write(bytes, 0, bytes.Length);
+                }
+
+                client.Close();
+            }
         }
     }
 }
