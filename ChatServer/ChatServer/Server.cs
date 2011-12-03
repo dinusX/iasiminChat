@@ -222,10 +222,7 @@ namespace ChatServer
                         break;
                     case 2: //Sign out
                         {
-                            stream.WriteByte(0);
-                            client.Close();
-
-                            //notify friends
+                            
                         }
 
                         break;
