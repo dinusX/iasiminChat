@@ -1,4 +1,5 @@
 <Modules>
   <Module PersistentId="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987" ModuleId="ChatClient" />
   <Module PersistentId="976A1F2C-34B2-4071-B734-224387287731" ModuleId="TestClient" />
+  <Module PersistentId="F607C7A1-D498-4ADE-8767-3FF697034F5D" ModuleId="ChatServer" />
 </Modules>

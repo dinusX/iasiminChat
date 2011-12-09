@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatClient", "ChatClient\Ch
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestClient", "TestClient\TestClient.csproj", "{976A1F2C-34B2-4071-B734-224387287731}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatServer", "..\ChatServer\ChatServer\ChatServer.csproj", "{F607C7A1-D498-4ADE-8767-3FF697034F5D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,16 @@ Global
 		{976A1F2C-34B2-4071-B734-224387287731}.Release|Mixed Platforms.Build.0 = Release|x86
 		{976A1F2C-34B2-4071-B734-224387287731}.Release|x86.ActiveCfg = Release|x86
 		{976A1F2C-34B2-4071-B734-224387287731}.Release|x86.Build.0 = Release|x86
+		{F607C7A1-D498-4ADE-8767-3FF697034F5D}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{F607C7A1-D498-4ADE-8767-3FF697034F5D}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{F607C7A1-D498-4ADE-8767-3FF697034F5D}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{F607C7A1-D498-4ADE-8767-3FF697034F5D}.Debug|x86.ActiveCfg = Debug|x86
+		{F607C7A1-D498-4ADE-8767-3FF697034F5D}.Debug|x86.Build.0 = Debug|x86
+		{F607C7A1-D498-4ADE-8767-3FF697034F5D}.Release|Any CPU.ActiveCfg = Release|x86
+		{F607C7A1-D498-4ADE-8767-3FF697034F5D}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{F607C7A1-D498-4ADE-8767-3FF697034F5D}.Release|Mixed Platforms.Build.0 = Release|x86
+		{F607C7A1-D498-4ADE-8767-3FF697034F5D}.Release|x86.ActiveCfg = Release|x86
+		{F607C7A1-D498-4ADE-8767-3FF697034F5D}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
