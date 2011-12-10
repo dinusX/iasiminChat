@@ -130,6 +130,21 @@ namespace ChatServer
                     }
 
                     break;
+
+                case 4: //friend response - when the other is online
+                    {
+                        Tuple<byte, string, int> resp = relation.Fourth as Tuple<byte, string, int>;
+
+                        this.Write(stream, resp.Item1); //a acceptat sau nu: 0 - da, 1 - nu
+                        
+                        if (resp.Item1 == 0) //a acceptat si trimite hostul si portul de comunicare
+                        {
+                            this.Write(stream, resp.Item2);
+                            this.Write(stream, resp.Item3);
+                        }
+                    }
+
+                    break;
             }
 
             stream.Close();
@@ -157,12 +172,18 @@ namespace ChatServer
             XDocument friend = null;
             XElement currentUser = null;
             
+            rwl.AcquireWriterLock(1000);
             Console.WriteLine("Accepted client from: {0}", client.Client.RemoteEndPoint);
+            rwl.ReleaseLock();
 
             do
             {
-                while (-1 == (command = (int)this.Read(stream, typeof(byte))))
-                    Thread.Sleep(10);
+                try
+                {
+                    while (-1 == (command = (int)this.Read(stream, typeof(byte))))
+                        Thread.Sleep(10);
+                }
+                catch (Exception e) { command = 2; }
 
                 rwl.AcquireWriterLock(1000);
                 Console.WriteLine("Command: {0}", command);
@@ -173,6 +194,7 @@ namespace ChatServer
                     {
                         case 1: //Sign in
                             {
+                                IEnumerable<XElement> requests;
                                 XElement listItem = null;
                                 XElement user;
                                 
@@ -218,15 +240,16 @@ namespace ChatServer
                                 remoteEndPoint = client.Client.RemoteEndPoint as IPEndPoint;
                                 details = this.Read(new FileStream(@"files\details\" + currentUser.Attribute("id").Value + ".xml", FileMode.Open), typeof(XDocument)) as XDocument;
 
-                                friends.Add(new XElement("friends"));
+                                friends.Add(new XElement("root"));
+                                friends.Root.Add(new XElement("friends"));
+                                friends.Root.Add(new XElement("friend_requests"));
                                 currentUser.Element("status").Attribute("state").Value = "online";
                                 currentUser.Element("status").Value = null;
                                 this.Write(new FileStream(@"files\users.xml", FileMode.Truncate), users);
                                 details.Root.Element("last_address_used").SetAttributeValue("ip_address", remoteEndPoint.Address);
                                 details.Root.Element("last_address_used").SetAttributeValue("port", remoteEndPoint.Port);
                                 details.Root.Element("last_address_used").SetAttributeValue("notif_port", notificationsPort);
-                                this.Write(new FileStream(@"files\details\" + currentUser.Attribute("id").Value + ".xml", FileMode.Truncate), details);
-
+                                
                                 friendIDs =
                                     from frnd in details.Root.Element("friends").Elements()
                                     select frnd.Attribute("id").Value;
@@ -248,25 +271,56 @@ namespace ChatServer
 
                                     listItem.Element("status").SetAttributeValue("state", "online");
                                     
-                                    listItem.Element("status").Value = user.Element("state").Value;
+                                    listItem.Element("status").Value = user.Element("status").Value;
                                     friend = this.Read(new FileStream(@"files\details\" + id + ".xml", FileMode.Open), typeof(XDocument)) as XDocument;
                                     
                                     (new Thread(this.NotifyFriend)).Start(new MyTuple<XElement, XDocument, int, object>(currentUser, friend, 0));
                                     
+                                    //pe portul normal comunica cu serverul, pe notif_port o sa stabileasca un port de comunicare cu celalt client
                                     listItem.Add(new XElement("last_address_used"));
                                     listItem.Element("last_address_used").SetAttributeValue("ip_address", friend.Root.Element("last_address_used").Attribute("ip_address").Value);
-                                    listItem.Element("last_address_used").SetAttributeValue("port", friend.Root.Element("last_address_used").Attribute("port").Value);
-                                    friends.Root.Add(listItem);
+                                    listItem.Element("last_address_used").SetAttributeValue("port", friend.Root.Element("last_address_used").Attribute("notif_port").Value);
+                                    friends.Root.Element("friends").Add(listItem);
 
                                     friend = null;
                                     listItem = null;
                                     user = null;
                                 }
 
+                                requests = 
+                                    from frnd in details.Root.Element("friend_requests").Elements()
+                                    select frnd;
+
+                                foreach (XElement request in requests)
+                                {
+                                    try
+                                    {
+                                        if (request.Attribute("to").Value != null)
+                                        {
+                                            listItem = new XElement("request");
+
+                                            listItem.SetAttributeValue("username", request.Attribute("to").Value);
+                                            listItem.SetAttributeValue("state", request.Attribute("state").Value);
+                                            friends.Root.Element("friend_requests").Add(listItem);
+
+                                            if (Int32.Parse(request.Attribute("state").Value) > 1)
+                                                request.Remove();
+                                        }
+                                    }
+                                    catch { }
+                                }
+
+                                this.Write(new FileStream(@"files\details\" + currentUser.Attribute("id").Value + ".xml", FileMode.Truncate), details);
+
                                 responseMessage = friends.ToString(SaveOptions.DisableFormatting);
                                 friends = null;
                                 friendIDs = null;
+                                users = null;
+                                currentUser = null;
+                                details = null;
                             }
+
+                            
 
                             break;
                         case 2: //Sign out
@@ -275,7 +329,6 @@ namespace ChatServer
 
                                 ok = false;
                                 users = (XDocument)this.Read(new FileStream(@"files\users.xml", FileMode.Open), typeof(XDocument));
-                                currentUser = null;
 
                                 currentUser =
                                     (
@@ -293,9 +346,10 @@ namespace ChatServer
 
                                 friendIDs = 
                                     from frnd in user.Root.Element("friends").Elements()
+                                    join usr in users.Root.Elements()
+                                    on new { frnd.Attribute("id").Value } equals new { usr.Attribute("id").Value }
+                                    where usr.Element("status").Attribute("state").Value == "online"
                                     select frnd.Attribute("id").Value;
-
-                                user = null;
 
                                 //notify
                                 foreach (string id in friendIDs)
@@ -308,6 +362,9 @@ namespace ChatServer
                                 }
 
                                 friendIDs = null;
+                                users = null;
+                                currentUser = null;
+                                user = null;
 
                                 stream.Close();
                             }
@@ -362,12 +419,18 @@ namespace ChatServer
                                 details.Root.Add(new XElement("last_address_used"));
                                 details.Root.Add(new XElement("friends"));
                                 details.Root.Add(new XElement("offline_messages"));
+                                details.Root.Add(new XElement("friend_requests"));
                                 details.Root.Element("last_address_used").SetAttributeValue("ip_address", remoteEndPoint.Address);
                                 details.Root.Element("last_address_used").SetAttributeValue("port", remoteEndPoint.Port);
                                 this.Write(new FileStream(@"files\details\" + (lastUserID + 1).ToString() + ".xml", FileMode.Truncate), details);
                                 
                                 Console.WriteLine("Recieved username: {0}", username);
                                 Console.WriteLine("Recieved password: {0}", password);
+
+                                users = null;
+                                details = null;
+                                currentUser = null;
+                                newUser = null;
                             }
 
                             break;
@@ -375,10 +438,11 @@ namespace ChatServer
                             {
                                 bool accepted;
                                 string friendID;
+                                string friendUsername;
                                 MyTuple<XElement, XDocument, int, object> tuple;
                                 XElement fr;
 
-                                username = (string)this.Read(stream, typeof(string));
+                                friendUsername = (string)this.Read(stream, typeof(string));
                                 users = this.Read(new FileStream(@"files\users.xml", FileMode.Open), typeof(XDocument)) as XDocument;
 
                                 try
@@ -386,7 +450,7 @@ namespace ChatServer
                                     friendID =
                                         (
                                             from usr in users.Root.Elements()
-                                            where usr.Attribute("username").Value == username && usr.Element("status").Attribute("state").Value == "online"
+                                            where usr.Attribute("username").Value == friendUsername
                                             select usr.Attribute("id").Value
                                         )
                                         .First();
@@ -398,42 +462,107 @@ namespace ChatServer
                                     break;
                                 }
 
-                                friend = this.Read(new FileStream(@"files\details\" + friendID + ".xml", FileMode.Open), typeof(XDocument)) as XDocument;
-                                tuple = new MyTuple<XElement, XDocument, int, object>(currentUser, friend, 3);
+                                currentUser =
+                                    (
+                                        from usr in users.Root.Elements()
+                                        where usr.Attribute("username").Value == username
+                                        select usr
+                                    )
+                                    .First();
 
-                                this.NotifyFriend(tuple);
+                                details = this.Read(new FileStream(@"files\details\" + currentUser.Attribute("id").Value + ".xml", FileMode.Open), typeof(XDocument)) as XDocument;
 
-                                accepted = (bool)tuple.Fourth;
-
-                                if (accepted)
+                                if (details.Root.Element("friends").Elements().Count(fID => fID.Attribute("id").Value == friendID) == 1)
                                 {
-                                    response = 0;
-                                    fr = new XElement("friend");
+                                    response = 2; //userul exista deja in lista de prieteni
 
-                                    fr.SetAttributeValue("id", currentUser.Attribute("id").Value);
-                                    friend.Root.Element("friends").Add(fr);
-                                    this.Write(new FileStream(@"files\details\" + friendID + ".xml", FileMode.Truncate), friend);
+                                    break;
+                                }
+
+                                friend = this.Read(new FileStream(@"files\details\" + friendID + ".xml", FileMode.Open), typeof(XDocument)) as XDocument;
+
+                                if (users.Root.Elements().Single(usr => usr.Attribute("id").Value == friendID).Element("status").Attribute("state").Value == "online")
+                                {
+                                    tuple = new MyTuple<XElement, XDocument, int, object>(currentUser, friend, 3);
                                     
-                                    fr = new XElement("friend");
-
-                                    fr.SetAttributeValue("id", friendID);
-                                    details.Root.Element("friends").Add(fr);
-                                    this.Write(new FileStream(@"files\details\" + currentUser.Attribute("id").Value + ".xml", FileMode.Truncate), details);    
+                                    this.NotifyFriend(tuple);
+                                    
+                                    accepted = (bool)tuple.Fourth;
+                                    
+                                    if (accepted)
+                                    {
+                                        response = 0;
+                                        fr = new XElement("friend");
+                                        
+                                        fr.SetAttributeValue("id", currentUser.Attribute("id").Value);
+                                        friend.Root.Element("friends").Add(fr);
+                                        this.Write(new FileStream(@"files\details\" + friendID + ".xml", FileMode.Truncate), friend);
+                                        
+                                        fr = new XElement("friend");
+                                        
+                                        fr.SetAttributeValue("id", friendID);
+                                        details.Root.Element("friends").Add(fr);
+                                        this.Write(new FileStream(@"files\details\" + currentUser.Attribute("id").Value + ".xml", FileMode.Truncate), details);    
+                                    }
+                                    else
+                                        response = 2;
                                 }
                                 else
-                                    response = 2;
+                                {
+                                    if (friend.Root.Element("friend_requests").Elements().Count(req => req.Attribute("from").Value == username) == 1)
+                                    {
+                                        response = 3; //exista deja o cerere
+
+                                        break;
+                                    }
+
+                                    fr = new XElement("request");
+
+                                    fr.SetAttributeValue("from", username);
+                                    fr.SetAttributeValue("id", currentUser.Attribute("id").Value);
+                                    friend.Root.Element("friend_requests").Add(fr);
+                                    this.Write(new FileStream(@"files\details\" + friendID + ".xml", FileMode.Truncate), friend);
+
+                                    fr = new XElement("request");
+
+                                    fr.SetAttributeValue("to", friendUsername);
+                                    fr.SetAttributeValue("id", friendID);
+                                    fr.SetAttributeValue("state", 1); //a intiat o cerere de adaugare in lista de prienteni
+                                    details.Root.Element("friend_requests").Add(fr);
+                                    this.Write(new FileStream(@"files\details" + currentUser.Attribute("id").Value + ".xml", FileMode.Truncate), details);
+                                }
+
+                                friend = null;
+                                fr = null;
+                                users = null;
+                                currentUser = null;
+                                details = null;
                             }
 
                             break;
                         case 5: //Change status message => notifyfriend cu 1
                             {
-                                string message = (string)this.Read(stream, typeof(string), false);
+                                string message;
+                                
+                                message = (string)this.Read(stream, typeof(string), false);
+                                users = this.Read(new FileStream(@"files\users.xml", FileMode.Open), typeof(XDocument)) as XDocument;
+
+                                currentUser =
+                                (
+                                    from usr in users.Root.Elements()
+                                    where usr.Attribute("username").Value == username
+                                    select usr
+                                )
+                                .First();
 
                                 currentUser.Element("status").Value = message;
                                 this.Write(new FileStream(@"files\users.xml", FileMode.Truncate), users);
                                 
                                 friendIDs =
-                                    from frnd in details.Root.Element("friends").Elements()
+                                    from frnd in details.Root.Element("friends").Elements() 
+                                    join usr in users.Root.Elements()
+                                    on new { frnd.Attribute("id").Value } equals new { usr.Attribute("id").Value }
+                                    where usr.Element("status").Attribute("state").Value == "online"
                                     select frnd.Attribute("id").Value;
 
                                 //notify
@@ -446,7 +575,100 @@ namespace ChatServer
                                     friend = null;
                                 }
 
+                                users = null;
+                                currentUser = null;
                                 friendIDs = null;
+                            }
+
+                            break;
+                        case 6: //cand un user a fost offline a i-a fost adresata o invitatie de prietenie
+                                //dupa ce s-a logat a raspuns server-ului de il adauga pe cel ce a initiat cererea ori nu
+                            {
+                                int resp = (int)this.Read(stream, typeof(byte));
+                                string friendUsername = (string)this.Read(stream, typeof(string));
+                                XElement request;
+                                MyTuple<XElement, XDocument, int, object> tuple;
+                                XElement friendElement;
+                                XElement fr;
+
+                                users = this.Read(new FileStream(@"files\users.xml", FileMode.Open), typeof(XDocument)) as XDocument;
+
+                                friendElement = 
+                                    (
+                                        from usr in users.Root.Elements()
+                                        where usr.Attribute("username").Value == friendUsername
+                                        select usr
+                                    )
+                                    .First();
+
+                                currentUser = 
+                                    (
+                                        from usr in users.Root.Elements()
+                                        where usr.Attribute("username").Value == username
+                                        select usr
+                                    )
+                                    .First();
+
+                                friend = this.Read(new FileStream(@"files\details" + friendElement.Attribute("id").Value + ".xml", FileMode.Open), typeof(XDocument)) as XDocument;
+                                details = this.Read(new FileStream(@"files\details" + currentUser.Attribute("id").Value + ".xml", FileMode.Open), typeof(XDocument)) as XDocument;
+
+                                request =
+                                    (
+                                        from frnd in details.Root.Element("friend_requests").Elements()
+                                        where frnd.Attribute("from").Value == friendUsername
+                                        select frnd
+                                    )
+                                    .First();
+                                
+                                request.Remove();
+
+                                request =
+                                    (
+                                        from frnd in friend.Root.Element("friend_requests").Elements()
+                                        where frnd.Attribute("to").Value == username
+                                        select frnd
+                                    )
+                                    .First();
+
+                                if(resp == 0) //raspuns favorabil la adaugarea in lista de prieteni
+                                {
+                                    fr = new XElement("friend");
+
+                                    fr.SetAttributeValue("id", friendElement.Attribute("id").Value);
+                                    details.Root.Element("friends").Add(fr);
+
+                                    fr = new XElement("friend");
+
+                                    fr.SetAttributeValue("id", currentUser.Attribute("id").Value);
+                                    friend.Root.Element("frinds").Add(fr);
+                                }
+                                if (friendElement.Element("status").Attribute("state").Value == "online")
+                                {
+                                    fr = friend.Root.Element("last_address_used");
+                                    tuple = new MyTuple<XElement, XDocument, int, object>(currentUser, friend, 4);
+                                    tuple.Fourth = new Tuple<byte, string, int> ((byte)resp, fr.Attribute("ip_address").Value, Int32.Parse(fr.Attribute("notif_port").Value));
+
+                                    this.NotifyFriend(tuple);
+                                    request.Remove();
+                                }
+                                else
+                                {
+                                    /*
+                                     * 2 - ok, cererea de adaugare in lista de prieteni a fost acceptata
+                                     * 3 - not ok, altfel
+                                     */
+                                    request.SetAttributeValue("state", 0 == resp ? 2 : 3); 
+                                    
+                                }
+
+                                this.Write(new FileStream(@"files\details" + currentUser.Attribute("id").Value + ".xml", FileMode.Truncate), details);
+                                this.Write(new FileStream(@"files\details" + friendElement.Attribute("id").Value + ".xml", FileMode.Truncate), friend);
+
+                                details = null;
+                                friend = null;
+                                friendElement = null;
+                                currentUser = null;
+                                users = null;
                             }
 
                             break;
@@ -568,5 +790,7 @@ namespace ChatServer
                     return;
             }
         }
+
+        private XElement 
     }
 }
