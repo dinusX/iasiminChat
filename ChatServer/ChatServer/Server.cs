@@ -481,6 +481,7 @@ namespace ChatServer
 
                                 friend = this.Read(new FileStream(@"files\details\" + friendID + ".xml", FileMode.Open), typeof(XDocument)) as XDocument;
 
+                                //daca e online se executa protocolul vechi, altfel cel nou
                                 if (users.Root.Elements().Single(usr => usr.Attribute("id").Value == friendID).Element("status").Attribute("state").Value == "online")
                                 {
                                     tuple = new MyTuple<XElement, XDocument, int, object>(currentUser, friend, 3);
