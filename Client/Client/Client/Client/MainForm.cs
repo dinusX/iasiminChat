@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Text.RegularExpressions;
+using Chat;
 
 namespace Client
 {
@@ -14,12 +15,15 @@ namespace Client
     {
         List<string> idNames = new List<string>();
         Bitmap myLogo;
+
+        private ChatClient _chatClient = null;
     
         public MainForm()
         {
             InitializeComponent();
             AlignWindow();   
         }
+
         private void AlignWindow()
         {
             //align the window to the right side of the screen and with maximum height
@@ -156,7 +160,8 @@ namespace Client
             }
             else
             {
-                LoadUserListForm();
+
+//                LoadUserListForm();//Dinu!
             }
             
         }
@@ -204,6 +209,7 @@ namespace Client
             this.listView1.View = System.Windows.Forms.View.Details;
             this.listView1.DoubleClick += new System.EventHandler(this.DoubleClick_Friend);
             this.listView1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.DoubleClick_Friend);
+            this.listView1.ColumnWidthChanging += new System.Windows.Forms.ColumnWidthChangingEventHandler(this.listView_ColumnWidthChanging);
             // 
             // pictureBox1
             // 
@@ -299,7 +305,7 @@ namespace Client
             header1.Text = "";
             header1.TextAlign = HorizontalAlignment.Center;
             header1.Width = 15;
-
+           
 
             header2.Text = "Username";
             header2.TextAlign = HorizontalAlignment.Center;
@@ -307,19 +313,24 @@ namespace Client
 
             header3.TextAlign = HorizontalAlignment.Left;
             header3.Text = "Status message";
-            header3.Width = 1500;
+            header3.Width = 140;
 
             //this.listView1.Columns.Add("", 15);
             this.listView1.Columns.Add(header1);
             this.listView1.Columns.Add(header2);
             this.listView1.Columns.Add(header3);
+            //this.listView1.SetBounds(0, 0, 100, 100);
+           
             
             // this.listView1
 
+            
             listViewItem1.UseItemStyleForSubItems = false;
             listViewItem1.BackColor = Color.Red;
             listViewItem1.SubItems.Add("Maria Ionescu");
             listViewItem1.SubItems.Add("mananc..");
+
+            //listViewItem1.SubItems[0].
             listViewItem1.SubItems[1].Font = new Font(listViewItem1.SubItems[1].Font,FontStyle.Bold);
 
             listViewItem2.SubItems.Add("Ion Amariei");
@@ -426,14 +437,17 @@ namespace Client
             if (ok == 1)
             {
                 idNames.Add(lws.Text);
-                Conversation conv = new Conversation(lws.Text, myLogo);
+                string name = listView1.SelectedItems[0].SubItems[1].Text;
+                string statusMes = listView1.SelectedItems[0].SubItems[2].Text;
+                Conversation conv = new Conversation(lws.Text, myLogo,name,statusMes);
                 conv.Show();
 
             }
             else 
             {
                 int marked = 0;
-                Conversation temp1 = new Conversation(null,null);
+                //string name = listView1.SelectedItems[0].SubItems[1].Text;
+                Conversation temp1 = new Conversation(null,null,null,null);
                 foreach (Form OpenForm in Application.OpenForms)
                 {
                     if (OpenForm.GetType() == temp1.GetType())
@@ -561,6 +575,10 @@ namespace Client
             this.Dispose();
         }
 
-              
+        private void listView_ColumnWidthChanging(object sender, ColumnWidthChangingEventArgs e)
+        {
+            e.Cancel = true;
+            e.NewWidth = listView1.Columns[e.ColumnIndex].Width;
+        }   
     }
 }

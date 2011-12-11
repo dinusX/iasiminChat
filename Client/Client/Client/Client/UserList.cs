@@ -69,6 +69,23 @@ namespace Client
             return null;
         }
 
+        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void listView1_Resize(object sender, EventArgs e)
+        {
+
+        }
+
+        private void listView1_ColumnWidthChanging(object sender, ColumnWidthChangingEventArgs e)
+        {
+
+        }
+
+       
+
        
        
 

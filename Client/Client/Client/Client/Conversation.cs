@@ -15,17 +15,33 @@ namespace Client
         public string id_name = "Eu: ";
         public string message;
         public Bitmap myLogoConv;
+        public string myFriend;
+        public string statusFriend;
 
-        public Conversation(string _id, Bitmap logo)
+        public Conversation(string _id, Bitmap logo, string myfriend, string statusFriend)
         {
             id = _id;
+            this.myFriend = myfriend;
+            this.statusFriend = statusFriend;
             
             InitializeComponent();
             if (logo != null)
             {
                 pictureBox2.Image = logo;
             }
+            if (statusFriend != null)
+            {
+                label1.Text = this.myFriend + " - " + this.statusFriend;
+            }
+            else
+            {
+                label1.Text = this.myFriend;
+           
+            }
+
+            this.Text = this.myFriend;
             this.ActiveControl = textBox2;
+
             
         }
 
@@ -37,19 +53,21 @@ namespace Client
 
             message = textBox2.Text;
 
-            textBox1.SelectionColor = Color.Gray;
-            textBox1.SelectionFont = forIdName;
-            textBox1.SelectedText = id_name;
+            if (message != "")
+            {
+                textBox1.SelectionColor = Color.Gray;
+                textBox1.SelectionFont = forIdName;
+                textBox1.SelectedText = id_name;
 
-            textBox1.SelectionColor = Color.Black;
-            textBox1.SelectionFont = forMessage;
+                textBox1.SelectionColor = Color.Black;
+                textBox1.SelectionFont = forMessage;
 
-            textBox1.SelectedText = message;
-
-            textBox2.ResetText();
-            textBox2.Multiline = false;
-            textBox2.Multiline = true; 
-                
+                textBox1.SelectedText = message;
+            }
+                textBox2.ResetText();
+                textBox2.Multiline = false;
+                textBox2.Multiline = true;
+            
             
         }
 
@@ -64,19 +82,22 @@ namespace Client
                 
                 
                 message = textBox2.Text;
-                
-                textBox1.SelectionColor = Color.Gray;
-                textBox1.SelectionFont = forIdName;
-                textBox1.SelectedText = id_name;
 
-                textBox1.SelectionColor = Color.Black;
-                textBox1.SelectionFont = forMessage;
+                if (message != "\n")
+                {
 
-                textBox1.SelectedText = message;
+                    textBox1.SelectionColor = Color.Gray;
+                    textBox1.SelectionFont = forIdName;
+                    textBox1.SelectedText = id_name;
 
-                textBox2.ResetText();
-                textBox2.Multiline = false; 
-                textBox2.Multiline = true; 
+                    textBox1.SelectionColor = Color.Black;
+                    textBox1.SelectionFont = forMessage;
+
+                    textBox1.SelectedText = message;
+                }
+                    textBox2.ResetText();
+                    textBox2.Multiline = false;
+                    textBox2.Multiline = true;
                 
             }
         }
