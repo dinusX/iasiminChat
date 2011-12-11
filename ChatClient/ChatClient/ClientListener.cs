@@ -14,14 +14,15 @@ namespace Chat
     {
         private static string ip = "127.0.0.1";
 
-        public int port = 10000;
+        public int port = 10000; //TODO Change to Random Port
 
-        private Action<string, string> receiveMessage = null;
+        private ChatClient _chatClient = null;
 
-        public ClientListener()
+        public ClientListener(ChatClient chatClient)
         {
-            //TODO implement this
-//            int i = 3;
+            if (chatClient == null)
+                throw new NullReferenceException("Invalid chatClient parameter");
+            _chatClient = chatClient;
         }
 
         public void Run()
@@ -93,48 +94,129 @@ namespace Chat
         {
 
             Stream stream = client.GetStream();
-            int option = stream.ReadByte();
-            int length = stream.ReadByte();
-            byte[] b = new byte[length];
-            stream.Read(b, 0, length);
+            int operation = stream.ReadByte();
 
-            if(option == 4)
+            byte[] b = null;
+
+            if (operation < 100) //Then is NotifyOperation
             {
-                Console.WriteLine("Received Message of {0} length with UTF8 conent: {1} ", length, Encoding.UTF8.GetString(b));
+                string username = ReadString(stream);
 
-                stream.WriteByte(1);//Success
+                switch ((NotifyOperation)operation)
+                {
+                    case NotifyOperation.LogIn:
+                        string host = ReadString(stream);
+                        int friendPort = ReadInt(stream);
+                        _chatClient.UpdateFriendAddress(username, host, friendPort);
+                        Console.WriteLine("Login Notif");
+                        break;
+                    case NotifyOperation.ChangeStatus:
+                        string statusMessage = ReadString(stream);
+                        _chatClient.UpdateFrindStatus(username, "online", statusMessage);
+                        Console.WriteLine("Change Status Notif");
+                        break;
+                    case NotifyOperation.LogOut:
+                        _chatClient.UpdateFrindStatus(username, "offline");
+                        Console.WriteLine("Offline Notif");
+                        break;
+                    case NotifyOperation.FriendRequest:
+                            stream.WriteByte(1); //Success
+                        break;
+                    default:
+//                        string message = ReadString(stream);
+                        Console.WriteLine("Other operation: " + operation);
+                        Console.WriteLine("Data: " + username);
+                        break;
+                }
             }
             else
             {
-                Console.WriteLine("Other option: " + option);
-                Console.WriteLine("Message: " + Encoding.UTF8.GetString(b));
-            }
-
-            if (option == 101)
-            {
-                Console.WriteLine("Received Message from another client (me: {0})",port);
-                //TODO how to treat username and ip/port
-                string message = Encoding.UTF8.GetString(b);
-//                Console.WriteLine("Message: " + Encoding.UTF8.GetString(b));
-                if (receiveMessage != null)
+                switch ((ClientOperation)operation)
                 {
-                    receiveMessage("hz", message);
+                    case ClientOperation.ReceiveMessage:
+                        {
+                            int length = stream.ReadByte();
+                            b = new byte[length];
+                            stream.Read(b, 0, length);
+                            Console.WriteLine("Received Message from another client (me: {0})", port);
+                            //TODO how to treat username and ip/port
+                            string message = Encoding.UTF8.GetString(b);
+                            //                Console.WriteLine("Message: " + Encoding.UTF8.GetString(b));
+                            if (_chatClient.ReceiveMessage != null)
+                            {
+                                _chatClient.ReceiveMessage("hz", message);
+                            }
+                        }
+                        break;
+                    case ClientOperation.ReceiveFile:
+                        {
+                            if (_chatClient.ConfirmatFileReceivement != null && _chatClient.ConfirmatFileReceivement("filename.txt", 1000))
+                            {
+                                string filename = "file1.gif";
+                                string path = _chatClient.GetPath(filename);
+                                //TODO check if path ok
+                                //TODO load file from stream + check if is not directory
+
+                                try
+                                {
+                                    Console.WriteLine("Receiving file");
+                                    FileStream fileStream = new FileStream(path + filename, FileMode.Create, FileAccess.Write);
+                                    b = new byte[8];
+                                    stream.Read(b, 0, 8);
+                                    //TODO change all for little indian
+                                    long length = BitConverter.ToInt64(b, 0);
+                                    Console.WriteLine("Length: " + length);
+                                    b = new byte[length];
+                                    int k = 0, offset = 0;
+                                    while (length > 0)
+                                    {
+                                        k = stream.Read(b, offset, (int)length);
+                                        length -= k;
+                                        offset += k;
+                                        Thread.Sleep(10);
+                                        Console.WriteLine("Received: " + k);
+                                        //TODO + abort
+                                    }
+                                    fileStream.Write(b, 0, b.Length);
+                                    fileStream.Close();
+                                    fileStream.Dispose(); //TODO do we need this ??
+                                    Console.WriteLine("Successfully received");
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine(ex);
+                                }
+                            }
+
+                        }
+                        break;
                 }
             }
+            
 
             client.Close();
         }
 
-        public void SetMessageReceiver(Action<string, string> method)
+        private int ReadInt(Stream stream)
         {
-            receiveMessage = method;
+            byte[] ba = new byte[4];
+            stream.Read(ba, 0, 4);
+
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse(ba);
+
+            return BitConverter.ToInt32(ba, 0);
+        }
+
+        private string ReadString(Stream stream)
+        {
+            int length = stream.ReadByte();
+            byte[] b = new byte[length];
+            stream.Read(b, 0, length);
+
+            return Encoding.UTF8.GetString(b);
         }
 
     }
 }
 
-//Operations:
-//1. LogIn
-//2. ChangeStatus
-//3. LogOut
-//4. FriendRequest

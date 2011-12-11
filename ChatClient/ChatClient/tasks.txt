@@ -1,0 +1,75 @@
+﻿
+1. Send file with confirmation and everything that needed
+2. make all todos
+3. change code if you want, Maybe clientListener -> to ChatClient
+4. 
+
+
+7. Rethink for ClientInterface when to make connection to server
++ Erros cind moare conexiunea
+
+//TODO Eu trebuie sa fac request once per 10/60 ... sec p/u a verifica daca este net
+
+
+1. Join programs
+
+9. Send tasks to Vlad Cristea
+
+
+//Events: 
+//Notification
+//User Changed Status
+//User Sent You message
+
+//TODO change status Message + Online/NA/Invisible ..
+
+Test signUp and friends Request
+---------------------------------------
+Done:
+
+
+
+
+
+---------------------------------------
+Shortcuts:
+
+Ctrl+M+O -> Collapse
+Ctrl+M+L -> Expand
+
+
+
+
+--------------------------------------
+Trash:
+
+
+//        private void Send(ServerOperation operation, string obj)
+//        {
+//            _connStream.WriteByte((byte)operation);
+//            Send(obj);
+//        }
+//
+//        private void Send(ServerOperation operation, int number)
+//        {
+//            _connStream.WriteByte((byte)operation);
+//            Send(number);
+//        }
+//
+//        private void Send(string obj)
+//        {
+//            byte[] ba = Encoding.UTF8.GetBytes(obj);
+//
+//            _connStream.WriteByte((byte)ba.Length);
+//            _connStream.Write(ba, 0, ba.Length);
+//        }
+//
+//        private void Send(int number)
+//        {
+//            byte[] ba = BitConverter.GetBytes(number);
+//
+//            if (BitConverter.IsLittleEndian)
+//                Array.Reverse(ba);
+//
+//            _connStream.Write(ba, 0, 4);
+//        }

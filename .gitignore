@@ -1,3 +1,12 @@
-*/bin/*
-*/obj/*
+ChatClient/ChatClient/bin/*
+ChatClient/ChatClient/obj/*
+ChatClient/TestClient/bin/*
+ChatClient/TestClient/obj/*
+ChatServer/ChatServer/bin/*
+ChatServer/ChatServer/obj/*
+Client/Client/Client/obj/*
+Client/Client/Client/Client/bin/*
+Client/Client/Client/Client/obj/*
 */_ReSharper.*/
+*/*.ReSharper.user
+
