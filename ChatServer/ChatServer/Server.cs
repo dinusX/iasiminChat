@@ -108,6 +108,7 @@ namespace ChatServer
                 case 1: //prietenul apare deja online, dar si-a schimbat mesajul de la status
                     {
                         this.Write(stream, (byte)2);
+                        this.Write(stream, username); //Dinu!
                         this.Write(stream, statusMessage, false);
                     }
 
@@ -244,7 +245,8 @@ namespace ChatServer
                                 friends.Root.Add(new XElement("friends"));
                                 friends.Root.Add(new XElement("friend_requests"));
                                 currentUser.Element("status").Attribute("state").Value = "online";
-                                currentUser.Element("status").Value = null;
+//                                currentUser.Element("status").Value = null; 
+                                currentUser.Element("status").Value = ""; //Dinu!
                                 this.Write(new FileStream(@"files\users.xml", FileMode.Truncate), users);
                                 details.Root.Element("last_address_used").SetAttributeValue("ip_address", remoteEndPoint.Address);
                                 details.Root.Element("last_address_used").SetAttributeValue("port", remoteEndPoint.Port);
@@ -339,7 +341,8 @@ namespace ChatServer
                                     .First();
 
                                 currentUser.Element("status").Attribute("state").Value = "offline";
-                                currentUser.Element("status").Value = null;
+//                                currentUser.Element("status").Value = null;
+                                currentUser.Element("status").Value = ""; //Dinu!
                                 this.Write(new FileStream(@"files\users.xml", FileMode.Truncate), users);
 
                                 user = this.Read(new FileStream(@"files\details\" + currentUser.Attribute("id").Value + ".xml", FileMode.Open), typeof(XDocument)) as XDocument;
@@ -412,7 +415,27 @@ namespace ChatServer
                                 if (!Directory.Exists(@"files\details"))
                                     Directory.CreateDirectory(@"files\details");
 
-                                details = this.Read(new FileStream(@"files\details\" + (lastUserID + 1).ToString() + ".xml", FileMode.Create), typeof(XDocument)) as XDocument;
+//                                details = this.Read(new FileStream(@"files\details\" + (lastUserID + 1).ToString() + ".xml", FileMode.Create), typeof(XDocument)) as XDocument;
+                                FileStream fileStream = null;
+                                try
+                                {
+                                    fileStream =
+                                        new FileStream(@"files\details\" + (lastUserID + 1).ToString() + ".xml",
+                                                       FileMode.Create);
+                                    details = this.Read(fileStream, typeof(XDocument)) as XDocument;
+                                    fileStream.Close();
+                                }
+                                catch (Exception ex)
+                                {
+                                    details = new XDocument();
+                                }
+                                finally
+                                {
+                                    if(fileStream != null)
+                                    fileStream.Close();
+                                }
+                                //Dinu! prind exceptie cind nu exista fisier
+
                                 remoteEndPoint = client.Client.RemoteEndPoint as IPEndPoint;
 
                                 details.Add(new XElement("details"));
