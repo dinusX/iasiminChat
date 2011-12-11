@@ -26,4 +26,7 @@ namespace Chat
         ReceiveMessage = 101,
         ReceiveFile = 102
     }
+
+
 }
+

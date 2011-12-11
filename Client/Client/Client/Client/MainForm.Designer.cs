@@ -53,14 +53,13 @@ namespace Client
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
-           
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.changeLogoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.signOutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.changeLogoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            
+            this.addFriendToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.menuStrip1.SuspendLayout();
@@ -200,14 +199,13 @@ namespace Client
             // 
             this.listView1.Location = new System.Drawing.Point(0, 0);
             this.listView1.Name = "listView1";
+            this.listView1.OwnerDraw = true;
+            this.listView1.Scrollable = false;
             this.listView1.Size = new System.Drawing.Size(121, 97);
             this.listView1.TabIndex = 0;
             this.listView1.UseCompatibleStateImageBehavior = false;
-            this.listView1.SelectedIndexChanged += new EventHandler(this.SelectItem);
-            this.listView1.Scrollable = false;
-            this.listView1.OwnerDraw = true;
+            this.listView1.SelectedIndexChanged += new System.EventHandler(this.SelectItem);
             this.listView1.Resize += new System.EventHandler(this.listView1_Resize);
-            
             // 
             // pictureBox1
             // 
@@ -236,8 +234,6 @@ namespace Client
             this.notifyIcon1.Visible = true;
             this.notifyIcon1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon1_MouseClick);
             this.notifyIcon1.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon1_MouseDoubleClick);
-            this.notifyIcon1.ContextMenu = new System.Windows.Forms.ContextMenu();
-            
             // 
             // menuStrip1
             // 
@@ -255,7 +251,8 @@ namespace Client
             this.settingsToolStripMenuItem,
             this.changeLogoToolStripMenuItem,
             this.signOutToolStripMenuItem,
-            this.exitToolStripMenuItem});
+            this.exitToolStripMenuItem,
+            this.addFriendToolStripMenuItem});
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
             this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
             this.optionsToolStripMenuItem.Text = "Options";
@@ -266,6 +263,14 @@ namespace Client
             this.settingsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.settingsToolStripMenuItem.Text = "Settings...";
             this.settingsToolStripMenuItem.Click += new System.EventHandler(this.settingsToolStripMenuItem_Click);
+            // 
+            // changeLogoToolStripMenuItem
+            // 
+            this.changeLogoToolStripMenuItem.Name = "changeLogoToolStripMenuItem";
+            this.changeLogoToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.changeLogoToolStripMenuItem.Text = "Change Logo";
+            this.changeLogoToolStripMenuItem.Visible = false;
+            this.changeLogoToolStripMenuItem.Click += new System.EventHandler(this.ChangeLogo);
             // 
             // signOutToolStripMenuItem
             // 
@@ -282,15 +287,12 @@ namespace Client
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.ExitToolStripMenuItem_Click);
             // 
-            // changeLogoToolStripMenuItem
+            // addFriendToolStripMenuItem
             // 
-            this.changeLogoToolStripMenuItem.Name = "changeLogoToolStripMenuItem";
-            this.changeLogoToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.changeLogoToolStripMenuItem.Text = "Change Logo";
-            this.changeLogoToolStripMenuItem.Click += new System.EventHandler(this.ChangeLogo);
-            this.changeLogoToolStripMenuItem.Visible = false;
-            
-            
+            this.addFriendToolStripMenuItem.Name = "addFriendToolStripMenuItem";
+            this.addFriendToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.addFriendToolStripMenuItem.Text = "Add Friend";
+            this.addFriendToolStripMenuItem.Click += new System.EventHandler(this.addFriendToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -370,6 +372,8 @@ namespace Client
            // this.listView1.AutoResizeColumn(0, ColumnHeaderAutoResizeStyle.HeaderSize);   
                
         }
+
+        private ToolStripMenuItem addFriendToolStripMenuItem;
     }
 }
 

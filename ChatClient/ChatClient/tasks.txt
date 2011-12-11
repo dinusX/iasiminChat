@@ -1,33 +1,37 @@
-﻿
-1. Send file with confirmation and everything that needed
-2. make all todos
-3. change code if you want, Maybe clientListener -> to ChatClient
-4. 
+﻿Friends Request and offline requests
+
+//Friend Request - to be also for offline users
+
+//Sending files
+//3. Cancel copy
+//4. Progress
+//5. Notification
 
 
-7. Rethink for ClientInterface when to make connection to server
-+ Erros cind moare conexiunea
+Add notification when Send File, Add Friend based on response
+Multiple Send Files to be parallel ???? requires multiple ports
 
-//TODO Eu trebuie sa fac request once per 10/60 ... sec p/u a verifica daca este net
+Get status from server.
 
+---------------------------------------
+Future:
+//TODO Online/NA/Invisible ..
+//Logo send
 
-1. Join programs
-
-9. Send tasks to Vlad Cristea
-
-
-//Events: 
-//Notification
-//User Changed Status
-//User Sent You message
-
-//TODO change status Message + Online/NA/Invisible ..
-
-Test signUp and friends Request
 ---------------------------------------
 Done:
 
+Simulare Add Friend
+Simulare Send File
 
+
+---------------------------------------
+Client Interface:
+list has scroll disable scroll
+
+GetIpandPort ??
+
+Client App is not closing .
 
 
 

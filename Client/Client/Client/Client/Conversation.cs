@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using Chat;
 
 namespace Client
 {
@@ -17,9 +18,11 @@ namespace Client
         public Bitmap myLogoConv;
         public string myFriend;
         public string statusFriend;
-
-        public Conversation(string _id, Bitmap logo, string myfriend, string statusFriend)
+        private ChatClient _chatClient = null;
+        //Receiving chatClient object
+        public Conversation(ChatClient chatClient, string _id, Bitmap logo, string myfriend, string statusFriend)
         {
+            _chatClient = chatClient;
             id = _id;
             this.myFriend = myfriend;
             this.statusFriend = statusFriend;
@@ -36,13 +39,10 @@ namespace Client
             else
             {
                 label1.Text = this.myFriend;
-           
             }
 
             this.Text = this.myFriend;
             this.ActiveControl = textBox2;
-
-            
         }
 
         private void Send_Msg(object sender, EventArgs e)
@@ -63,6 +63,8 @@ namespace Client
                 textBox1.SelectionFont = forMessage;
 
                 textBox1.SelectedText = message;
+                //Dinu! Sending Message
+                _chatClient.SendMessage(myFriend, message);
             }
                 textBox2.ResetText();
                 textBox2.Multiline = false;
@@ -110,9 +112,12 @@ namespace Client
             pointerToMainForm.CloseConversation(id);
         }
 
+        //TODO need implementation
         private void SendFile_Click(object sender, EventArgs e)
         {
-
+            //TODO browse file
+            string filePath = @"C:\nap3.gif";
+            _chatClient.SendFile(myFriend,filePath);
         }
 
        

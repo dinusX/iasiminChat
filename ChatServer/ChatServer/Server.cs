@@ -85,71 +85,88 @@ namespace ChatServer
         private void NotifyFriend(object rel)
         {
             byte[] bytes;
-            MyTuple<XElement, XDocument, int, object> relation = (MyTuple<XElement, XDocument, int, object>)rel;
-            Int32 port = Int32.Parse(relation.Second.Root.Element("last_address_used").Attribute("notif_port").Value);
-            String host = relation.Second.Root.Element("last_address_used").Attribute("ip_address").Value;
-            String statusMessage = relation.First.Element("status").Value;
-            String username = relation.First.Attribute("username").Value;
-            TcpClient notifClient = new TcpClient(host, port);
-            NetworkStream stream = notifClient.GetStream();
-
-            switch (relation.Third)
+            //Dinu! am adaugat try->catch
+            TcpClient notifClient = null;
+            NetworkStream stream = null;
+            try
             {
-                case 0:
-                    {
-                        //log in
-                        this.Write(stream, (byte)1);
-                        this.Write(stream, username);
-                        this.Write(stream, host);
-                        this.Write(stream, port);
-                    }
+                MyTuple<XElement, XDocument, int, object> relation = (MyTuple<XElement, XDocument, int, object>)rel;
+                Int32 port = Int32.Parse(relation.Second.Root.Element("last_address_used").Attribute("notif_port").Value);
+                String host = relation.Second.Root.Element("last_address_used").Attribute("ip_address").Value;
+                String statusMessage = relation.First.Element("status").Value;
+                String username = relation.First.Attribute("username").Value;
+                notifClient = new TcpClient(host, port);
+                stream = notifClient.GetStream();
 
-                    break;
-                case 1: //prietenul apare deja online, dar si-a schimbat mesajul de la status
-                    {
-                        this.Write(stream, (byte)2);
-                        this.Write(stream, username); //Dinu!
-                        this.Write(stream, statusMessage, false);
-                    }
-
-                    break;
-                case 2: //log out
-                    {
-                        //e necesar numai sa fie trimis numele utilizatorului ce se delogheaza
-                        //datorita unicitatii acestuia
-                        this.Write(stream, (byte)3);
-                        this.Write(stream, username);
-                    }
-
-                    break;
-                case 3: //friend request
-                    {
-                        this.Write(stream, (byte)4);
-                        this.Write(stream, username);
-
-                        relation.Fourth = 1 == (int)this.Read(stream, typeof(byte)) ? true : false;
-                    }
-
-                    break;
-
-                case 4: //friend response - when the other is online
-                    {
-                        Tuple<byte, string, int> resp = relation.Fourth as Tuple<byte, string, int>;
-
-                        this.Write(stream, resp.Item1); //a acceptat sau nu: 0 - da, 1 - nu
-                        
-                        if (resp.Item1 == 0) //a acceptat si trimite hostul si portul de comunicare
+                switch (relation.Third)
+                {
+                    case 0:
                         {
-                            this.Write(stream, resp.Item2);
-                            this.Write(stream, resp.Item3);
+                            //log in
+                            this.Write(stream, (byte)1);
+                            this.Write(stream, username);
+                            this.Write(stream, host);
+                            this.Write(stream, port);
                         }
-                    }
 
-                    break;
+                        break;
+                    case 1: //prietenul apare deja online, dar si-a schimbat mesajul de la status
+                        {
+                            this.Write(stream, (byte)2);
+                            this.Write(stream, username); //Dinu!
+                            this.Write(stream, statusMessage, false);
+                        }
+
+                        break;
+                    case 2: //log out
+                        {
+                            //e necesar numai sa fie trimis numele utilizatorului ce se delogheaza
+                            //datorita unicitatii acestuia
+                            this.Write(stream, (byte)3);
+                            this.Write(stream, username);
+                        }
+
+                        break;
+                    case 3: //friend request
+                        {
+                            this.Write(stream, (byte)4);
+                            this.Write(stream, username);
+
+                            relation.Fourth = 1 == (int)this.Read(stream, typeof(byte)) ? true : false;
+                        }
+
+                        break;
+
+                    case 4: //friend response - when the other is online
+                        {
+                            Tuple<byte, string, int> resp = relation.Fourth as Tuple<byte, string, int>;
+
+                            this.Write(stream, resp.Item1); //a acceptat sau nu: 0 - da, 1 - nu
+
+                            if (resp.Item1 == 0) //a acceptat si trimite hostul si portul de comunicare
+                            {
+                                this.Write(stream, resp.Item2);
+                                this.Write(stream, resp.Item3);
+                            }
+                        }
+
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Notification Exception");
+                //No connection
+            }
+            finally
+            {
+                if(stream != null)
+                    stream.Close();
+                if(notifClient != null)
+                    notifClient.Close();
             }
 
-            stream.Close();
-            notifClient.Close();
+            
         }
 
         private void SatisfyClient(object cl)
@@ -189,12 +206,15 @@ namespace ChatServer
                 rwl.AcquireWriterLock(1000);
                 Console.WriteLine("Command: {0}", command);
 
+                response = 0;//reseting to default Dinu!
+
                 try
                 {
                     switch (command)
                     {
                         case 1: //Sign in
                             {
+
                                 IEnumerable<XElement> requests;
                                 XElement listItem = null;
                                 XElement user;
@@ -205,6 +225,7 @@ namespace ChatServer
                                 notificationsPort = (int)this.Read(stream, typeof(int));
                                 users = this.Read(new FileStream(@"files\users.xml", FileMode.Open), typeof(XDocument)) as XDocument;
 
+                                Console.WriteLine("User: "+ username);
                                 try
                                 {
                                     //se incearca sa se extraga utilizatorul ce se logheaza din lista de utilizatori
@@ -225,12 +246,13 @@ namespace ChatServer
                                     break;
                                 }
 
-                                if (currentUser.Element("status").Attribute("state").Value == "online") //se verifica de utilizatorul e deja online
-                                {
-                                    response = 2;
-
-                                    break;
-                                }
+//                                if (currentUser.Element("status").Attribute("state").Value == "online") //se verifica de utilizatorul e deja online
+//                                {
+//                                    response = 2;
+//
+//                                    break;
+//                                }
+                                //Dinu! Temporary commented, until will be solved
                                 if (currentUser.Attribute("password").Value != password) //se verifica de parola introdusa e aceeasi cu cea din baza de date
                                 {
                                     response = 3;
@@ -553,7 +575,7 @@ namespace ChatServer
                                     fr.SetAttributeValue("id", friendID);
                                     fr.SetAttributeValue("state", 1); //a intiat o cerere de adaugare in lista de prienteni
                                     details.Root.Element("friend_requests").Add(fr);
-                                    this.Write(new FileStream(@"files\details" + currentUser.Attribute("id").Value + ".xml", FileMode.Truncate), details);
+                                    this.Write(new FileStream(@"files\details\" + currentUser.Attribute("id").Value + ".xml", FileMode.Truncate), details);
                                 }
 
                                 friend = null;
@@ -567,8 +589,8 @@ namespace ChatServer
                         case 5: //Change status message => notifyfriend cu 1
                             {
                                 string message;
-                                
-                                message = (string)this.Read(stream, typeof(string), false);
+
+                                message = (string)this.Read(stream, typeof(string)); //, false  -> Changed to Byte
                                 users = this.Read(new FileStream(@"files\users.xml", FileMode.Open), typeof(XDocument)) as XDocument;
 
                                 currentUser =
@@ -581,7 +603,10 @@ namespace ChatServer
 
                                 currentUser.Element("status").Value = message;
                                 this.Write(new FileStream(@"files\users.xml", FileMode.Truncate), users);
-                                
+
+
+                                details = this.Read(new FileStream(@"files\details\" + currentUser.Attribute("id").Value + ".xml", FileMode.Open), typeof(XDocument)) as XDocument;
+
                                 friendIDs =
                                     from frnd in details.Root.Element("friends").Elements() 
                                     join usr in users.Root.Elements()
@@ -633,8 +658,8 @@ namespace ChatServer
                                     )
                                     .First();
 
-                                friend = this.Read(new FileStream(@"files\details" + friendElement.Attribute("id").Value + ".xml", FileMode.Open), typeof(XDocument)) as XDocument;
-                                details = this.Read(new FileStream(@"files\details" + currentUser.Attribute("id").Value + ".xml", FileMode.Open), typeof(XDocument)) as XDocument;
+                                friend = this.Read(new FileStream(@"files\details\" + friendElement.Attribute("id").Value + ".xml", FileMode.Open), typeof(XDocument)) as XDocument;
+                                details = this.Read(new FileStream(@"files\details\" + currentUser.Attribute("id").Value + ".xml", FileMode.Open), typeof(XDocument)) as XDocument;
 
                                 request =
                                     (
@@ -685,8 +710,8 @@ namespace ChatServer
                                     
                                 }
 
-                                this.Write(new FileStream(@"files\details" + currentUser.Attribute("id").Value + ".xml", FileMode.Truncate), details);
-                                this.Write(new FileStream(@"files\details" + friendElement.Attribute("id").Value + ".xml", FileMode.Truncate), friend);
+                                this.Write(new FileStream(@"files\details\" + currentUser.Attribute("id").Value + ".xml", FileMode.Truncate), details);
+                                this.Write(new FileStream(@"files\details\" + friendElement.Attribute("id").Value + ".xml", FileMode.Truncate), friend);
 
                                 details = null;
                                 friend = null;
@@ -814,7 +839,5 @@ namespace ChatServer
                     return;
             }
         }
-
-        private XElement 
     }
 }

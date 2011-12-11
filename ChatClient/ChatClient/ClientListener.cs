@@ -109,18 +109,23 @@ namespace Chat
                         int friendPort = ReadInt(stream);
                         _chatClient.UpdateFriendAddress(username, host, friendPort);
                         Console.WriteLine("Login Notif");
+                        //TODO change number to enum
+                        _chatClient.Notify(2, null);
                         break;
                     case NotifyOperation.ChangeStatus:
                         string statusMessage = ReadString(stream);
                         _chatClient.UpdateFrindStatus(username, "online", statusMessage);
                         Console.WriteLine("Change Status Notif");
+                        _chatClient.Notify(2, null);
                         break;
                     case NotifyOperation.LogOut:
                         _chatClient.UpdateFrindStatus(username, "offline");
                         Console.WriteLine("Offline Notif");
+                        _chatClient.Notify(2, null);
                         break;
                     case NotifyOperation.FriendRequest:
                             stream.WriteByte(1); //Success
+                        //Get Confirmation
                         break;
                     default:
 //                        string message = ReadString(stream);
@@ -136,23 +141,24 @@ namespace Chat
                     case ClientOperation.ReceiveMessage:
                         {
                             int length = stream.ReadByte();
-                            b = new byte[length];
-                            stream.Read(b, 0, length);
+                            string username = ReadString(stream);
+                            string message = ReadString(stream);
                             Console.WriteLine("Received Message from another client (me: {0})", port);
-                            //TODO how to treat username and ip/port
-                            string message = Encoding.UTF8.GetString(b);
-                            //                Console.WriteLine("Message: " + Encoding.UTF8.GetString(b));
+
                             if (_chatClient.ReceiveMessage != null)
                             {
-                                _chatClient.ReceiveMessage("hz", message);
+                                _chatClient.ReceiveMessage(username, message);
                             }
                         }
                         break;
                     case ClientOperation.ReceiveFile:
                         {
-                            if (_chatClient.ConfirmatFileReceivement != null && _chatClient.ConfirmatFileReceivement("filename.txt", 1000))
+                            //TODO maybe read username
+                            string filename = ReadString(stream);
+                            long size = ReadLong(stream);
+                            if (_chatClient.ConfirmatFileReceivement != null && _chatClient.ConfirmatFileReceivement(filename, size))
                             {
-                                string filename = "file1.gif";
+
                                 string path = _chatClient.GetPath(filename);
                                 //TODO check if path ok
                                 //TODO load file from stream + check if is not directory
@@ -161,12 +167,12 @@ namespace Chat
                                 {
                                     Console.WriteLine("Receiving file");
                                     FileStream fileStream = new FileStream(path + filename, FileMode.Create, FileAccess.Write);
-                                    b = new byte[8];
-                                    stream.Read(b, 0, 8);
                                     //TODO change all for little indian
-                                    long length = BitConverter.ToInt64(b, 0);
-                                    Console.WriteLine("Length: " + length);
-                                    b = new byte[length];
+
+                                    b = new byte[size];
+
+                                    long length = size;
+
                                     int k = 0, offset = 0;
                                     while (length > 0)
                                     {
@@ -179,7 +185,7 @@ namespace Chat
                                     }
                                     fileStream.Write(b, 0, b.Length);
                                     fileStream.Close();
-                                    fileStream.Dispose(); //TODO do we need this ??
+                                    fileStream.Dispose(); 
                                     Console.WriteLine("Successfully received");
                                 }
                                 catch (Exception ex)
@@ -206,6 +212,17 @@ namespace Chat
                 Array.Reverse(ba);
 
             return BitConverter.ToInt32(ba, 0);
+        }
+
+        private long ReadLong(Stream stream)
+        {
+            byte[] ba = new byte[8];
+            stream.Read(ba, 0, 8);
+
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse(ba);
+
+            return BitConverter.ToInt64(ba, 0);
         }
 
         private string ReadString(Stream stream)

@@ -126,6 +126,12 @@
   <ItemGroup>
     <None Include="Resources\chat-o.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\ChatClient\ChatClient\ChatClient.csproj">
+      <Project>{2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987}</Project>
+      <Name>ChatClient</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

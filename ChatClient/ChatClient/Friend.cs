@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Chat
 {
-    class Friend
+    public class Friend
     {
         public Friend(string name, string ip, int port, string status, string statusMessage = null)
         {
@@ -46,6 +46,11 @@ namespace Chat
         {
             get { return _statusMessage; }
             set { _statusMessage = value; }
+        }
+
+        public bool Online()
+        {
+            return this.Status == "online";
         }
     }
 }

@@ -8,6 +8,8 @@ using System.Text;
 using System.Windows.Forms;
 using System.Text.RegularExpressions;
 using Chat;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Client
 {
@@ -17,11 +19,29 @@ namespace Client
         Bitmap myLogo;
 
         private ChatClient _chatClient = null;
-    
+
         public MainForm()
         {
             InitializeComponent();
-            AlignWindow();   
+            AlignWindow();
+
+            //Start Dinu!
+            Stream stream = File.Open("config.info", FileMode.Open);
+            BinaryFormatter bformatter = new BinaryFormatter();
+            bformatter = new BinaryFormatter();
+
+            ConnectingSettingsData info = (ConnectingSettingsData)bformatter.Deserialize(stream);
+            stream.Close();
+
+            int port = Int32.Parse(info.port);
+
+            _chatClient = new ChatClient(info.ip, port);
+            _chatClient.SetMessageReceiver(ReceiveMessage);
+            _chatClient.SetFileReceiver(ConfirmFileReceivement, GetSavePath);
+            _chatClient.SetNotifier(Notify);
+            //or in other place
+            
+            //End Dinu!    
         }
 
         private void AlignWindow()
@@ -31,9 +51,12 @@ namespace Client
             this.StartPosition = FormStartPosition.Manual;
             this.SetBounds(0, 0, this.Size.Width, Screen.PrimaryScreen.WorkingArea.Height);
             this.Location = new Point(Screen.PrimaryScreen.WorkingArea.Width - this.Width, Screen.PrimaryScreen.WorkingArea.Height - this.Height);
-            this.notifyIcon1.ContextMenu.MenuItems.Add(0, new MenuItem("Exit...", new System.EventHandler(this.ExitClick))); 
-            
+            if (this.notifyIcon1.ContextMenu == null)
+                this.notifyIcon1.ContextMenu = new ContextMenu();
+            this.notifyIcon1.ContextMenu.MenuItems.Add(0, new MenuItem("Exit...", new System.EventHandler(this.ExitClick)));
+
         }
+
         private void Sign_Up(object sender, EventArgs e)
         {
             this.Controls.Remove(this.pictureBox1);
@@ -43,7 +66,7 @@ namespace Client
             this.Controls.Remove(this.button2);
 
 
-            
+
             this.textBox1.SetBounds(103, 152, 150, 20);
             this.label1.Location = new System.Drawing.Point(10, 152);
             this.label1.Text = "Username";
@@ -61,11 +84,11 @@ namespace Client
             this.label3.Location = new System.Drawing.Point(10, 217);
             this.label3.Text = "Conf. Password";
 
-            
+
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.textBox2);
             this.Controls.Add(this.textBox3);
-            
+
             this.Controls.Add(this.button1);
             this.Controls.Add(this.button2);
 
@@ -84,17 +107,13 @@ namespace Client
             this.button1.Click -= new System.EventHandler(this.Sign_in);
             this.button1.Click += new System.EventHandler(this.Create_Account);
 
-            
+
             this.button2.Click -= new System.EventHandler(this.Sign_Up);
             this.button2.Click += new System.EventHandler(this.Quit);
 
 
-            
+
         }
-
-
-
-
 
         public void Quit(object sender, EventArgs e)
         {
@@ -118,7 +137,7 @@ namespace Client
             this.Controls.Remove(this.textBox4);
             this.Controls.Remove(this.textBox5);
             this.Controls.Remove(this.textBox6);
-            
+
             InitializeComponent();
             AlignWindow();
         }
@@ -131,14 +150,14 @@ namespace Client
                 Hide();
                 WindowState = FormWindowState.Minimized;
                 pointerToMainForm.ShowMessageNotifyIcon(" Minimized in tray");
-               
+
             }
             else
             {
                 Show();
                 WindowState = FormWindowState.Normal;
                 pointerToMainForm.ShowMessageNotifyIcon(" Restored from tray");
-               
+
             }
         }
 
@@ -148,11 +167,13 @@ namespace Client
             {
                 MessageBox.Show("Unauthorized log without username and password", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
             }
+            else
             if (this.textBox1.Text.Length < 3 || this.textBox1.Text.Length > 15)
             {
                 MessageBox.Show("Username length between 3 and 15 characters", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
-          
+
             }
+            else 
             if (this.textBox2.Text.Length < 6 || this.textBox2.Text.Length > 50)
             {
                 MessageBox.Show("Password length between 6 and 50 characters", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
@@ -160,11 +181,66 @@ namespace Client
             }
             else
             {
+                //Start Dinu!
 
-//                LoadUserListForm();//Dinu!
+                string username = this.textBox1.Text;
+                string password = this.textBox2.Text;
+
+                _chatClient.SignIn(username, password);
+                //TODO check if successful signIn
+                //if signIn
+                this.textBox1.Text = username;
+                this.textBox2.Text = "My Status"; //TODO load status
+
+                //End Dinu!
+                LoadUserListForm();
             }
-            
+
         }
+
+        //Start Dinu!  TODO improve
+        void ReceiveMessage(string username, string message)
+        {
+            MessageBox.Show("Received Message from: " + username + " \nMessage: " + message);
+//            Console.WriteLine("Received Message from: {0} \nMessage: {1}", username, message);
+        }
+
+        void Notify(int option, string message)
+        {
+            //Option:
+            //1. Connection Died
+            //2. Users information changed (need to update)
+            //3. File Received (Rethink)
+
+            switch(option)
+            {
+                case 1:
+                    MessageBox.Show(message);
+//                    Console.WriteLine("Connection Died:\n " + message);
+                    break;
+                case 2:
+                    MessageBox.Show("User Information Changed: \n ");
+                    break;
+                case 3:
+                    Console.WriteLine(message);
+                    break;
+            }
+
+            //TODO
+        }
+
+        bool ConfirmFileReceivement(string filename, long size)
+        {
+            return true;
+        }
+
+        string GetSavePath(string filename)
+        {
+            return @"D:\";
+        }
+
+
+        //End Dinu!
 
         private void LoadUserListForm()
         {
@@ -202,7 +278,7 @@ namespace Client
             this.listView1.MultiSelect = false;
             this.listView1.Name = "listView1";
             this.listView1.Size = new System.Drawing.Size(151, 496);
-           
+
             this.listView1.TabIndex = 1;
             this.listView1.TileSize = new System.Drawing.Size(1, 1);
             this.listView1.UseCompatibleStateImageBehavior = false;
@@ -247,7 +323,7 @@ namespace Client
             this.textBox1.Size = new System.Drawing.Size(106, 20);
             this.textBox1.TabIndex = 5;
             //numele trebuie dat de la server pornind de la username/password in
-            this.textBox1.Text = "Cutarica Popica";
+            this.textBox1.Text = _chatClient.UserName;
             // 
             // textBox2
             // 
@@ -256,6 +332,7 @@ namespace Client
             this.textBox2.Size = new System.Drawing.Size(106, 20);
             this.textBox2.TabIndex = 6;
             this.textBox2.KeyPress += new KeyPressEventHandler(this.ChangeStatus);
+            this.textBox2.Text = _chatClient.StatusMessage;
             // 
             // UserList
             // 
@@ -282,22 +359,21 @@ namespace Client
 
         }
 
-
         private void PopulateListView()
         {
-            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem();
-            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem();
-            listViewItem1.UseItemStyleForSubItems = false;
+//            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem();
+//            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem();
+//            listViewItem1.UseItemStyleForSubItems = false;
             listView1.Sorting = SortOrder.Ascending;
             listView1.AllowColumnReorder = true;
 
 
 
-            this.listView1.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem1,
-            listViewItem2});
+//            this.listView1.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
+//            listViewItem1,
+//            listViewItem2});
 
-             ColumnHeader header1, header2,header3;
+            ColumnHeader header1, header2, header3;
             header1 = new ColumnHeader();
             header2 = new ColumnHeader();
             header3 = new ColumnHeader();
@@ -305,7 +381,7 @@ namespace Client
             header1.Text = "";
             header1.TextAlign = HorizontalAlignment.Center;
             header1.Width = 15;
-           
+
 
             header2.Text = "Username";
             header2.TextAlign = HorizontalAlignment.Center;
@@ -320,52 +396,76 @@ namespace Client
             this.listView1.Columns.Add(header2);
             this.listView1.Columns.Add(header3);
             //this.listView1.SetBounds(0, 0, 100, 100);
-           
-            
+
+
             // this.listView1
 
-            
-            listViewItem1.UseItemStyleForSubItems = false;
-            listViewItem1.BackColor = Color.Red;
-            listViewItem1.SubItems.Add("Maria Ionescu");
-            listViewItem1.SubItems.Add("mananc..");
 
-            //listViewItem1.SubItems[0].
-            listViewItem1.SubItems[1].Font = new Font(listViewItem1.SubItems[1].Font,FontStyle.Bold);
+//            listViewItem1.UseItemStyleForSubItems = false;
+//            listViewItem1.BackColor = Color.Red;
+//            listViewItem1.SubItems.Add("Maria Ionescu");
+//            listViewItem1.SubItems.Add("mananc..");
+//            //listViewItem1.SubItems[0].
+//            listViewItem1.SubItems[1].Font = new Font(listViewItem1.SubItems[1].Font, FontStyle.Bold);
+//
+//            listViewItem2.SubItems.Add("Ion Amariei");
+//            listViewItem2.SubItems.Add("lucrez...");
+//            listViewItem2.UseItemStyleForSubItems = false;
+//            listViewItem2.BackColor = Color.Green;
+//            listViewItem2.SubItems[1].Font = new Font(listViewItem2.SubItems[1].Font, FontStyle.Bold);
 
-            listViewItem2.SubItems.Add("Ion Amariei");
-            listViewItem2.SubItems.Add("lucrez...");
-            listViewItem2.UseItemStyleForSubItems = false;
-            listViewItem2.BackColor = Color.Green;
-            listViewItem2.SubItems[1].Font = new Font(listViewItem2.SubItems[1].Font, FontStyle.Bold);
+            ListViewItem friendItem = null;
+            var friends = _chatClient.GetFriends();
+            foreach (var friend in friends)
+            {
+                friendItem = new ListViewItem();
+                friendItem.SubItems.Add(friend.Name);
+                friendItem.SubItems.Add(friend.StatusMessage);
+                friendItem.UseItemStyleForSubItems = false;
+                if (friend.Online())
+                {
+                    friendItem.BackColor = Color.Green;
+                }
+                else
+                {
+                    friendItem.BackColor = Color.Red;
+                }
+
+                friendItem.SubItems[1].Font = new Font(friendItem.SubItems[1].Font, FontStyle.Bold);
+                this.listView1.Items.Add(friendItem);
+            }
 
         }
 
-
+        //TODO improve
         private void Create_Account(object sender, EventArgs e)
         {
+            bool good = true;
             //verificam campurile introduse de utlizator
             //username
-            if (this.textBox1.Text.Length == 0 ||this.textBox1.Text.Length < 8)
+            if (this.textBox1.Text.Length == 0 || this.textBox1.Text.Length < 3)
             {
-                MessageBox.Show("Username must have at least 8 characters", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning,MessageBoxDefaultButton.Button1);
+                MessageBox.Show("Username must have at least 8 characters", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
                 textBox1.ForeColor = Color.Red;
+                good = false;
             }
             else textBox1.ForeColor = Color.Green;
-            
+
             //parola
             //trebuie parola alpha- numerica
-            if (this.textBox2.Text.Length == 0 || this.textBox2.Text.Length < 8)
+            if (this.textBox2.Text.Length == 0 || this.textBox2.Text.Length < 6)
             {
                 MessageBox.Show("Password must have at least 8 characters", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
                 textBox2.ForeColor = Color.Red;
+                good = false;
             }
             else textBox2.ForeColor = Color.Green;
 
-            if (this.textBox3.Text.Length == 0 || this.textBox3.Text.Length < 8)
+            if (this.textBox3.Text.Length == 0 || this.textBox3.Text.Length < 6)
             {
                 MessageBox.Show("Password confirmation must have at least 8 characters", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
                 textBox3.ForeColor = Color.Red;
+                good = false;
             }
             else textBox3.ForeColor = Color.Green;
 
@@ -374,18 +474,7 @@ namespace Client
                 MessageBox.Show("Password and password confirmation don't match", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
                 textBox2.ForeColor = Color.Red;
                 textBox3.ForeColor = Color.Red;
-            }
-            else 
-            {
-                textBox2.ForeColor = Color.Green;
-                textBox3.ForeColor = Color.Green;
-            
-            }
-            if (!Regex.IsMatch(this.textBox2.Text, @"^[a-zA-Z0-9]+$") && !Regex.IsMatch(this.textBox3.Text, @"^[a-zA-Z0-9]+$"))
-            {
-                MessageBox.Show("Password must contain alfa-numeric characters", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
-                textBox2.ForeColor = Color.Red;
-                textBox3.ForeColor = Color.Red;
+                good = false;
             }
             else
             {
@@ -394,6 +483,31 @@ namespace Client
 
             }
 
+            if (!Regex.IsMatch(this.textBox2.Text, @"^[a-zA-Z0-9]+$") && !Regex.IsMatch(this.textBox3.Text, @"^[a-zA-Z0-9]+$"))
+            {
+                MessageBox.Show("Password must contain alfa-numeric characters", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+                textBox2.ForeColor = Color.Red;
+                textBox3.ForeColor = Color.Red;
+                good = false;
+            }
+            else
+            {
+                textBox2.ForeColor = Color.Green;
+                textBox3.ForeColor = Color.Green;
+
+            }
+
+            if (good)
+            {
+                string username = this.textBox1.Text;
+                string password = this.textBox2.Text;
+
+                _chatClient.SignUp(username, password);
+
+                //TODO Sign in if successful SignUp
+                _chatClient.SignIn(username, password);
+                //TODO catch response
+            }
         }
 
         private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -415,17 +529,18 @@ namespace Client
         public void ShowMessageNotifyIcon(string info)
         {
             notifyIcon1.ShowBalloonTip(1000, "info", info, ToolTipIcon.Info);
-       
+
         }
+
         private void DoubleClick_Friend(object sender, EventArgs e)
         {
-            
+
             Conversation pointerToForm = (Conversation)Application.OpenForms["Conversation"];
             ListView lw = (ListView)sender;
             ListViewItem lwi = lw.SelectedItems[0];
             ListViewItem.ListViewSubItem lws = lwi.SubItems[1];
 
-            int ok =1;
+            int ok = 1;
             foreach (string temp in idNames)
             {
                 if (temp == lws.Text)
@@ -439,21 +554,22 @@ namespace Client
                 idNames.Add(lws.Text);
                 string name = listView1.SelectedItems[0].SubItems[1].Text;
                 string statusMes = listView1.SelectedItems[0].SubItems[2].Text;
-                Conversation conv = new Conversation(lws.Text, myLogo,name,statusMes);
+                Conversation conv = new Conversation(_chatClient, lws.Text, myLogo, name, statusMes);
                 conv.Show();
 
             }
-            else 
+            else
             {
+                //TODO inspect why null, null, null.
                 int marked = 0;
                 //string name = listView1.SelectedItems[0].SubItems[1].Text;
-                Conversation temp1 = new Conversation(null,null,null,null);
+                Conversation temp1 = new Conversation(null, null, null, null, null);
                 foreach (Form OpenForm in Application.OpenForms)
                 {
                     if (OpenForm.GetType() == temp1.GetType())
                     {
 
-                        if(OpenForm is Conversation)
+                        if (OpenForm is Conversation)
                         {
                             Conversation temp = (Conversation)OpenForm;
                             if (lws.Text == temp.id)
@@ -469,9 +585,9 @@ namespace Client
                             }
 
                         }
-                         
+
                     }
-                        
+
                 }
             }
 
@@ -479,16 +595,16 @@ namespace Client
 
         public void CloseConversation(string id)
         {
-             idNames.Remove(id);
+            idNames.Remove(id);
         }
 
         private void textBox2_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (e.KeyChar == 13) 
+            if (e.KeyChar == 13)
             {
                 Sign_in(sender, e);
             }
-            
+
         }
 
         private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
@@ -496,7 +612,7 @@ namespace Client
             if (e.KeyChar == 13)
             {
                 Sign_in(sender, e);
-            }   
+            }
         }
 
         private void signOutToolStripMenuItem_Click(object sender, EventArgs e)
@@ -509,14 +625,11 @@ namespace Client
             this.Controls.Remove(this.listView1);
             this.Controls.Remove(this.menuStrip1);
             this.notifyIcon1.Visible = false;
-            
-            
+
+
             InitializeComponent();
             AlignWindow();
         }
-
-
-       
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -534,10 +647,10 @@ namespace Client
                 pointerToMainForm.ShowMessageNotifyIcon(" Restored from tray");
                 WindowState = FormWindowState.Normal;
             }
-            
-           
 
-            
+
+
+
         }
 
         private void ChangeStatus(object sender, KeyPressEventArgs e)
@@ -548,30 +661,33 @@ namespace Client
 
                 MainForm pointerToMainForm = (MainForm)Application.OpenForms[0];
                 pointerToMainForm.ShowMessageNotifyIcon(" Changed Status");
-            
+
             }
         }
+
         private void ChangeLogo(object sender, EventArgs e)
         {
             OpenFileDialog open = new OpenFileDialog();
-            
+
             open.Filter = "Image Files(*.jpg; *.jpeg; *.gif; *.bmp)|*.jpg; *.jpeg; *.gif; *.bmp";
             if (open.ShowDialog() == DialogResult.OK)
             {
                 myLogo = new Bitmap(open.FileName);
                 pictureBox1.Image = myLogo;
-            } 
-        } 
+            }
+        }
 
         private void ExitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.signOutToolStripMenuItem_Click(sender, e);
+            this.Close();
             this.Dispose();
         }
 
         private void ExitClick(object sender, EventArgs e)
         {
             this.signOutToolStripMenuItem_Click(sender, e);
+            this.Close(); 
             this.Dispose();
         }
 
@@ -579,6 +695,12 @@ namespace Client
         {
             e.Cancel = true;
             e.NewWidth = listView1.Columns[e.ColumnIndex].Width;
-        }   
+        }
+
+        //TODO need implementation
+        private void addFriendToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _chatClient.SendFriendRequest("vanea1234");
+        }
     }
 }

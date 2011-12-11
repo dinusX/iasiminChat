@@ -15,6 +15,7 @@ namespace Client
         {
             InitializeComponent();
             PopulateListView();
+            throw new Exception("hello"); //It is unused
         }
 
         private void PopulateListView()
@@ -38,6 +39,7 @@ namespace Client
             listViewItem1.UseItemStyleForSubItems = false;
             listViewItem1.BackColor = Color.Red;
 
+            //TODO inspect ???
 
             listViewItem1.SubItems.Add("Maria Ionescu");
             listViewItem1.SubItems.Add("mananc..");

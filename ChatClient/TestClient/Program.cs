@@ -29,14 +29,17 @@ namespace TestClient
             }
 
             //Decomenteaza liniile ca sa creezi useri
-//            chatClient.SignUp("Dinu", "MyPassword");
-//            chatClient2.SignUp("George", "HisPassword");
+            chatClient.SignUp("Dinu", "MyPassword");
+            chatClient2.SignUp("George", "HisPassword");
+
             chatClient.SignIn("Dinu", "MyPassword");
-//            Thread.Sleep(100);
+            
+            Thread.Sleep(100);
             
             chatClient2.SignIn("George", "HisPassword");
 //            Console.WriteLine("Sending friend request");
-//            chatClient.SendFriendRequest("George");
+
+            //            chatClient.SendFriendRequest("George");
 
             chatClient.SetMessageReceiver(ReceiveMessage);
             chatClient2.SetMessageReceiver(ReceiveMessage);
@@ -45,7 +48,9 @@ namespace TestClient
 
             chatClient.SendMessage("George", "Hi George");
 
-            chatClient.SendFile("George", @"C:\Users\Dinu\Documents\Visual Studio 2010\Projects\ChatClient\nap3.gif");
+//            chatClient.SendFile("George", @"C:\nap3.gif");
+
+            chatClient.ChangeStatus("Dinu Status");
 
             chatClient.SignOut();
             chatClient2.SignOut(); 
@@ -61,7 +66,7 @@ namespace TestClient
             
         }
 
-        static bool ConfirmFileReceivement(string filename, int size)
+        static bool ConfirmFileReceivement(string filename, long size)
         {
             return true;
         }
@@ -73,25 +78,3 @@ namespace TestClient
     }
 }
 
-
-//Plan de lucru
-//1. Simulate Friend Request
-//2. Send Message
-
-//3. Send File
-
-//Modify :
-//Friend Request - to be also for offline users
-//Logout - To be independent of Server
-
-
-//Test all
-
-//Daca moare conexiunea il facem offline
-
-
-//Sending files
-//1. COnfirmation
-//2. Multiple Files
-//3. Cancel copy
-//4. Progress
