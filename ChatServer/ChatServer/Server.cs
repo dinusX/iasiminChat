@@ -134,19 +134,46 @@ namespace ChatServer
                         break;
                     case 3: //friend request
                         {
+                            bool resp1;
+                            byte resp2;
+                            string resp3 = "";
+
                             this.Write(stream, (byte)4);
                             this.Write(stream, username);
 
-                            relation.Fourth = 1 == (int)this.Read(stream, typeof(byte)) ? true : false;
+                            if (relation.Fourth as string == "")
+                                this.Write(stream, (byte)0);
+                            else
+                            {
+                                this.Write(stream, (byte)1);
+                                this.Write(stream, relation.Fourth as string);
+                            }
+
+                            resp1 = 1 == (int)this.Read(stream, typeof(byte)) ? true : false;
+                            resp2 = (byte)this.Read(stream, typeof(byte));
+
+                            if (resp2 == 1)
+                                resp3 = (string)this.Read(stream, typeof(string));
+
+                            relation.Fourth = new Tuple<bool, string>(resp1, resp3);
                         }
 
                         break;
                     case 4: //friend response - when the other is online
                         {
-                            Tuple<byte, string, int> resp = relation.Fourth as Tuple<byte, string, int>;
+                            Tuple<byte, string, int, string> resp = relation.Fourth as Tuple<byte, string, int, string>;
 
                             this.Write(stream, (byte)5);
+                            this.Write(stream, username);
                             this.Write(stream, resp.Item1); //a acceptat sau nu: 0 - da, 1 - nu
+
+                            if (resp.Item4 != "") //friend message
+                            {
+                                this.Write(stream, (byte)1);
+                                this.Write(stream, resp.Item4);
+                            }
+                            else
+                                this.Write(stream, (byte)1);
 
                             if (resp.Item1 == 0) //a acceptat si trimite hostul si portul de comunicare
                             {
@@ -159,6 +186,7 @@ namespace ChatServer
                     case 5:
                         {
                             this.Write(stream, (byte)6);
+                            this.Write(stream, username);
                             this.Write(stream, relation.Fourth as string); //se trimite numele fisierului ce trebuie downloadat
                         }
 
@@ -337,21 +365,29 @@ namespace ChatServer
 
                                 foreach (XElement request in requests)
                                 {
+                                    listItem = new XElement("request");
+
                                     try
                                     {
                                         if (request.Attribute("to").Value != null)
                                         {
-                                            listItem = new XElement("request");
-
                                             listItem.SetAttributeValue("username", request.Attribute("to").Value);
-                                            listItem.SetAttributeValue("state", request.Attribute("state").Value);
-                                            friends.Root.Element("friend_requests").Add(listItem);
-
-                                            if (Int32.Parse(request.Attribute("state").Value) > 1)
-                                                request.Remove();
+                                            listItem.SetAttributeValue("type", "to");
                                         }
                                     }
-                                    catch { }
+                                    catch 
+                                    { 
+                                        listItem.SetAttributeValue("username", request.Attribute("from").Value);
+                                        listItem.SetAttributeValue("type", "from");
+                                    }
+
+                                    listItem.SetAttributeValue("state", request.Attribute("state").Value);
+                                    listItem.Value = request.Value;
+
+                                    friends.Root.Element("friend_requests").Add(listItem);
+
+                                    if (Int32.Parse(request.Attribute("state").Value) > 1)
+                                        request.Remove();
                                 }
 
                                 this.Write(new FileStream(@"files\details\" + currentUser.Attribute("id").Value + ".xml", FileMode.Truncate), details);
@@ -482,10 +518,17 @@ namespace ChatServer
                                 bool accepted;
                                 string friendID;
                                 string friendUsername;
+                                string friendMessage = "";
                                 MyTuple<XElement, XDocument, int, object> tuple;
                                 XElement fr;
 
-                                try { friendUsername = (string)this.Read(stream, typeof(string)); }
+                                try 
+                                { 
+                                    friendUsername = (string)this.Read(stream, typeof(string));
+
+                                    if ((byte)this.Read(stream, typeof(byte)) == 0)
+                                        friendMessage = (string)this.Read(stream, typeof(string)); //să zicem că-i un mesaj de nu mai mult de 256 de caract
+                                }
                                 catch
                                 {
                                     command = 2;
@@ -530,16 +573,21 @@ namespace ChatServer
                                 {
                                     tuple = new MyTuple<XElement, XDocument, int, object>(currentUser, friend, 3);
 
+                                    tuple.Fourth = friendMessage;
+
                                     try { this.NotifyFriend(tuple); }
                                     catch { friendConnectionInterrrupted = true; }
 
                                     if (!friendConnectionInterrrupted)
                                     {
-                                        accepted = (bool)tuple.Fourth;
+                                        Tuple<bool, string> resp = tuple.Fourth as Tuple<bool, string>;
+
+                                        accepted = resp.Item1;
 
                                         if (accepted)
                                         {
                                             response = 0;
+                                            
                                             fr = new XElement("friend");
 
                                             fr.SetAttributeValue("id", currentUser.Attribute("id").Value);
@@ -554,6 +602,23 @@ namespace ChatServer
                                         }
                                         else
                                             response = 2;
+
+                                        try
+                                        {
+                                            if (resp.Item2 != "")
+                                            {
+                                                this.Write(stream, (byte)1);
+                                                this.Write(stream, resp.Item2);
+                                            }
+                                            else
+                                                this.Write(stream, (byte)0);
+                                        }
+                                        catch
+                                        {
+                                            command = 2;
+
+                                            break;
+                                        }
                                     }
                                 }
                                 if (!friendOnline || friendConnectionInterrrupted)
@@ -566,6 +631,7 @@ namespace ChatServer
                                     }
 
                                     fr = new XElement("request");
+                                    fr.Value = friendMessage;
 
                                     fr.SetAttributeValue("from", username);
                                     fr.SetAttributeValue("id", currentUser.Attribute("id").Value);
@@ -630,6 +696,7 @@ namespace ChatServer
 
                                 int resp;
                                 string friendUsername;
+                                string friendMessage = "";
                                 XElement request;
                                 MyTuple<XElement, XDocument, int, object> tuple;
                                 XElement friendElement;
@@ -639,6 +706,9 @@ namespace ChatServer
                                 {
                                     resp = (int)this.Read(stream, typeof(byte));
                                     friendUsername = (string)this.Read(stream, typeof(string));
+
+                                    if ((byte)this.Read(stream, typeof(byte)) == 1)
+                                        friendMessage = (string)this.Read(stream, typeof(string));
                                 }
                                 catch
                                 {
@@ -646,8 +716,6 @@ namespace ChatServer
 
                                     break;
                                 }
-
-                                users = this.Read(new FileStream(@"files\users.xml", FileMode.Open), typeof(XDocument)) as XDocument;
 
                                 friendElement = this.GetUSer(friendUsername);
                                 currentUser = this.GetUSer(username);
@@ -689,7 +757,7 @@ namespace ChatServer
                                 {
                                     fr = friend.Root.Element("last_address_used");
                                     tuple = new MyTuple<XElement, XDocument, int, object>(currentUser, friend, 4);
-                                    tuple.Fourth = new Tuple<byte, string, int> ((byte)resp, fr.Attribute("ip_address").Value, Int32.Parse(fr.Attribute("notif_port").Value));
+                                    tuple.Fourth = new Tuple<byte, string, int, string> ((byte)resp, fr.Attribute("ip_address").Value, Int32.Parse(fr.Attribute("notif_port").Value), friendMessage);
 
                                     this.NotifyFriend(tuple);
                                     request.Remove();
@@ -700,8 +768,8 @@ namespace ChatServer
                                      * 2 - ok, cererea de adaugare in lista de prieteni a fost acceptata
                                      * 3 - not ok, altfel
                                      */
-                                    request.SetAttributeValue("state", 0 == resp ? 2 : 3); 
-                                    
+                                    request.SetAttributeValue("state", 0 == resp ? 2 : 3);
+                                    request.Value = friendMessage;
                                 }
 
                                 this.Write(new FileStream(@"files\details\" + currentUser.Attribute("id").Value + ".xml", FileMode.Truncate), details);
@@ -772,7 +840,7 @@ namespace ChatServer
                                     break;
                                 }
 
-                                this.NotifyFriends(currentUser, 5);
+                                this.NotifyFriends(currentUser, 5, currUserID + "_" + rand + ".bmp");
                             }
 
                             break;
