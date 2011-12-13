@@ -46,6 +46,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AddFriend.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AddFriend.Designer.cs">
+      <DependentUpon>AddFriend.cs</DependentUpon>
+    </Compile>
     <Compile Include="ConnectingSettings.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -73,6 +79,9 @@
     <Compile Include="UserList.Designer.cs">
       <DependentUpon>UserList.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="AddFriend.resx">
+      <DependentUpon>AddFriend.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ConnectingSettings.resx">
       <DependentUpon>ConnectingSettings.cs</DependentUpon>
       <SubType>Designer</SubType>

@@ -15,8 +15,10 @@ namespace Client
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            //Application.Run(new MainForm());
             Application.Run(new MainForm());
+            //Application.Run(new Conversation(null,null,null,null,null));
+            //Application.Run(new AddFriend());
+            
         }
     }
 }

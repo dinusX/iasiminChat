@@ -15,7 +15,7 @@ namespace Chat
     {
         private TcpClient _tcpClient = null;
         private int clientPort = 0;
-        List<Friend>  friends = new List<Friend>();
+        private List<Friend> friends = new List<Friend>();
         private ClientListener _clientListener = null;
         private Stream _connStream = null;
 
@@ -26,8 +26,15 @@ namespace Chat
         private string _username = "";
         private string _statusMessage = "";
 
-        public string UserName { get { return _username; } }
-        public string StatusMessage { get { return _statusMessage; } }
+        public string UserName
+        {
+            get { return _username; }
+        }
+
+        public string StatusMessage
+        {
+            get { return _statusMessage; }
+        }
 
         public ChatClient(string ip, int port)
         {
@@ -45,7 +52,7 @@ namespace Chat
             _tcpClient.Connect(_ip, _port);
 
             _connStream = _tcpClient.GetStream();
-            
+
             Console.WriteLine("Connected");
 
             _clientListener = new ClientListener(this);
@@ -54,10 +61,10 @@ namespace Chat
             connected = true;
         }
 
-        public void SignIn(string username, string password)
+        public int SignIn(string username, string password)
         {
             if (username == null || password == null)
-                throw new NullReferenceException("Invalid Username or Password"); 
+                throw new NullReferenceException("Invalid Username or Password");
 
             Connect(); //TODO need errors on connection
             //TODO rethink need to return int as response
@@ -66,16 +73,16 @@ namespace Chat
 
             byte response = ReadResponse();
             Console.WriteLine("Response: " + response);
-            
+
             if (response != 0)
             {
                 //TODO failure
-                return;
+                return response;
             }
 
             //TODO save status message
             this._username = username;
-            this._statusMessage = "My Status Message";
+//            this._statusMessage = "My Status Message";
 
             //Read friends string
             int length = ReadInt();
@@ -85,41 +92,70 @@ namespace Chat
 
             string tmp = Encoding.UTF8.GetString(ba);
             Console.WriteLine(tmp);
-            XDocument friendsXml = XDocument.Parse(tmp);
+            XDocument dataXml = XDocument.Parse(tmp);
 
-            friends = new List<Friend>(); 
-            foreach (var friend in friendsXml.Root.Element("friends").Elements())
+            this._statusMessage = dataXml.Root.Element("myself").Element("status").Value;
+
+            friends = new List<Friend>();
+            foreach (var friend in dataXml.Root.Element("friends").Elements())
             {
                 XElement address = friend.Element("last_address_used");
                 XElement status = friend.Element("status");
-                friends.Add(new Friend(friend.Attribute("username").Value, address.Attribute("ip_address").Value, 
-                    Int32.Parse(address.Attribute("port").Value), status.Attribute("state").Value, status.Value));
+                friends.Add(new Friend(friend.Attribute("username").Value, address.Attribute("ip_address").Value,
+                                       Int32.Parse(address.Attribute("port").Value), status.Attribute("state").Value,
+                                       status.Value));
             }
+            return 0;
 
         }
 
-        public void SignUp(string username, string password)
+        public int SignUp(string username, string password)
         {
             if (username == null || password == null)
-                throw new NullReferenceException("Invalid Username or Password"); 
+                throw new NullReferenceException("Invalid Username or Password");
             Connect();
 
             Send(ServerOperation.SignUp, username, password);
-            Console.WriteLine("response: " + ReadResponse());
+            int response = ReadResponse();
+            Console.WriteLine("response: " + response);
+            return response;
         }
 
-        public void SendFriendRequest(string username)
+        public int SendFriendRequest(string username, string message)
         {
-            if (username == null )
-                throw new NullReferenceException("Invalid Username"); 
-            if(!connected)
+            if (username == null)
+                throw new NullReferenceException("Invalid Username");
+            if (!connected)
                 throw new NotConnectedException("You should Connect before Sending Friend Request");
 
-            Send(ServerOperation.FriendRequest, username);
-            Console.WriteLine("Friend Request Response: " + ReadResponse());
+            //TODO modify
+            Send(ServerOperation.FriendRequest, username, message);
+            int response = ReadResponse();
+            if (response == 0)
+            {
+                string xmlFile = ReadString(true);
+                AddFrind(xmlFile);
+//                Notify(3, xmlFile);
+            }
+            Console.WriteLine("Friend Request Response: " + response);
+            return response;
         }
 
-        public void SignOut()
+        internal void AddFrind(string xmlString)
+        {
+            XDocument dataXml = XDocument.Parse(xmlString);
+
+            var friend = dataXml.Root;
+            XElement address = friend.Element("last_address_used");
+            XElement status = friend.Element("status");
+            friends.Add(new Friend(friend.Attribute("username").Value, address.Attribute("ip_address").Value,
+                                    Int32.Parse(address.Attribute("port").Value), status.Attribute("state").Value,
+                                    status.Value));
+            if (Notify != null)
+                Notify(2, null);
+        }
+
+    public void SignOut()
         {
             if(_tcpClient != null)
                 _tcpClient.Close();
@@ -132,7 +168,6 @@ namespace Chat
                 throw new NullReferenceException("Invalid Status");
             if (!connected)
                 throw new NotConnectedException("You should Connect before Changing Status");
-
             Send(ServerOperation.ChangeStatus, statusMessage);
             Console.WriteLine("Change Status Response: " + ReadResponse());
         }
@@ -164,6 +199,17 @@ namespace Chat
             //TODO else throw errors
         }
 
+        public void AddOfflineMessage(string username, string message)
+        {
+            if (username == null)
+                throw new NullReferenceException("Invalid Username");
+            if (message == null)
+                throw new NotConnectedException("Invalid message");
+            Send(ServerOperation.AddOfflineMessage, username);
+            SendLongString(message);
+            Console.WriteLine("Change Status Response: " + ReadResponse());
+        }
+
         private Friend GetFriend(string username)
         {
             //TODO maybe change friends to Dictionary
@@ -192,37 +238,56 @@ namespace Chat
         {
             new Thread(delegate()
             {
-                //TODO errors
-                FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-                string filename = filePath.Split(new char[] {'\\'}).Last();
-                Console.WriteLine("Filename: " + filename);
-                long length = fileStream.Length;
-                var friend = GetFriend(username);
-                if (friend != null)
+                try
                 {
-                    //TODO connect and send message
-                    TcpClient friendClient = new TcpClient();
-                    friendClient.Connect(friend.Ip, friend.Port);
+                    //TODO errors
+                    FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                    string filename = filePath.Split(new char[] { '\\' }).Last();
+                    Console.WriteLine("Filename: " + filename);
+                    int length = (int)fileStream.Length; //TODO improve
+                    var friend = GetFriend(username);
+                    if (friend != null)
+                    {
+                        //TODO connect and send message
+                        TcpClient friendClient = new TcpClient();
+                        friendClient.Connect(friend.Ip, friend.Port);
 
-                    Stream stream = friendClient.GetStream();
-                    stream.WriteByte(102); //TODO to enum
+                        Stream stream = friendClient.GetStream();
+                        stream.WriteByte(102); //TODO to enum
 
-                    //send filename
-                    byte[] b = Encoding.UTF8.GetBytes(filename);
-                    stream.WriteByte((byte)filename.Length);
-                    stream.Write(b, 0, b.Length);
+                        //send filename
+                        byte[] b = Encoding.UTF8.GetBytes(filename);
+                        stream.WriteByte((byte)filename.Length);
+                        stream.Write(b, 0, b.Length);
 
-                    b = BitConverter.GetBytes(length);
-                    if (BitConverter.IsLittleEndian)
-                        Array.Reverse(b);
 
-                    //write content
-                    stream.Write(b, 0, b.Length);
-                    b = new byte[length];
-                    fileStream.Read(b, 0, (int)length); //TODO change this conversion
-                    stream.Write(b, 0, b.Length);
+                        b = BitConverter.GetBytes(length);
+                        if (BitConverter.IsLittleEndian)
+                            Array.Reverse(b);
+
+                        //write content
+                        stream.Write(b, 0, b.Length);
+
+                        if (stream.ReadByte() != 0)
+                        {
+                            //FIle ignored
+                            if (Notify != null)
+                                Notify(3, "FIle was not accepted");
+                            fileStream.Close(); 
+                            return;
+                        }
+
+                        b = new byte[length];
+                        fileStream.Read(b, 0, length); //TODO change this conversion
+                        stream.Write(b, 0, b.Length);
+                    }
                 }
-                           
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    Notify(3, ex.ToString());
+                }
+
             }).Start();
 
         }
@@ -253,7 +318,12 @@ namespace Chat
         {
             foreach (var obj in objects)
             {
-                if(obj is int)
+                if (obj is byte)
+                {
+                    _connStream.WriteByte((byte)obj);
+                }
+                else
+                if (obj is int)
                 {
                     byte[] ba = BitConverter.GetBytes((int)obj);
                     if (BitConverter.IsLittleEndian)
@@ -265,9 +335,42 @@ namespace Chat
                     byte[] ba = Encoding.UTF8.GetBytes(obj.ToString());
 
                     _connStream.WriteByte((byte)ba.Length);
-                    _connStream.Write(ba, 0, ba.Length);
+                    if(ba.Length != 0)
+                        _connStream.Write(ba, 0, ba.Length);
                 }
             }
+        }
+
+        private void SendLongString(string text)
+        {
+//                if (obj is byte)
+//                {
+//                    _connStream.WriteByte((byte)obj);
+//                }
+//                else
+//                if (obj is int)
+//                {
+//                    byte[] ba = BitConverter.GetBytes((int)obj);
+//                    if (BitConverter.IsLittleEndian)
+//                        Array.Reverse(ba);
+//                    _connStream.Write(ba, 0, 4);
+//                }
+//                else
+//                {
+
+            byte[] ba = Encoding.UTF8.GetBytes(text);
+
+            byte[] blen = BitConverter.GetBytes(ba.Length);
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse(blen);
+
+            _connStream.Write(blen, 0, blen.Length);
+
+//                    Encoding.UTF8.GetBytes(obj.ToString());
+//                    _connStream.WriteByte((byte)ba.Length);
+            if (ba.Length != 0)
+                _connStream.Write(ba, 0, ba.Length);
+//                }
         }
 
         internal void UpdateFriendAddress(string username, string host, int friendPort)
@@ -318,12 +421,40 @@ namespace Chat
             }
         }
 
+        private string ReadString(bool intLength = false)
+        {
+            int length = 0;
+            if (!intLength)
+                length = _connStream.ReadByte();
+            else
+            {
+                length = ReadInt();
+            }
+
+            if (length == 0)
+                return "";
+            int total = length, offset = 0;
+            byte[] b = new byte[length];
+            int k = 0;
+            while (total > 0)
+            {
+                k = _connStream.Read(b, offset, total);
+                total -= k;
+                offset += k;
+
+                //                _chatClient.Notify(3, "received: " + k + " remained " + total);
+            }
+
+            return Encoding.UTF8.GetString(b);
+        }
+
 #region callbacks
 
         internal Action<string, string> ReceiveMessage = null;
         internal Func<string, long, bool> ConfirmatFileReceivement = null;
         internal Func<string, string> GetPath = null;
         internal Action<int, string> Notify = null;
+        internal Func<string, string, bool> ConfirmFriendRequest = null; 
         public void SetMessageReceiver(Action<string, string> method)
         {
             ReceiveMessage = method;
@@ -338,6 +469,11 @@ namespace Chat
         public void SetNotifier(Action<int, string> method)
         {
             Notify = method;
+        }
+
+        public void SetFriendRequestConfirmation(Func<string, string, bool> method)
+        {
+            ConfirmFriendRequest = method;
         }
 #endregion
 

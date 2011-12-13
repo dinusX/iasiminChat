@@ -1,127 +1,144 @@
 <Configuration>
   <RecentFiles>
     <RecentFiles>
-      <File id="A6F45F78-E28B-45A7-8EF6-EE167DA8FF5C/f:Program.cs" caret="362" fromTop="15" />
-      <File id="A6F45F78-E28B-45A7-8EF6-EE167DA8FF5C/f:MainForm.Designer.cs" caret="604" fromTop="18" />
-      <File id="A6F45F78-E28B-45A7-8EF6-EE167DA8FF5C/f:MainForm.cs" caret="8029" fromTop="27" />
-      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:Friend.cs" caret="432" fromTop="16" />
-      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:Enums.cs" caret="384" fromTop="22" />
-      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:tasks.txt" caret="451" fromTop="17" />
-      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:ClientListener.cs" caret="5073" fromTop="20" />
-      <File id="976A1F2C-34B2-4071-B734-224387287731/f:Program.cs" caret="1442" fromTop="26" />
-      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:ChatClient.cs" caret="5086" fromTop="27" />
+      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:NotConnectedException.cs" caret="256" fromTop="11" />
+      <File id="A6F45F78-E28B-45A7-8EF6-EE167DA8FF5C/f:Conversation.cs" caret="3094" fromTop="27" />
+      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:tasks.txt" caret="933" fromTop="34" />
+      <File id="A6F45F78-E28B-45A7-8EF6-EE167DA8FF5C/f:AddFriend.cs" caret="782" fromTop="25" />
+      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:Enums.cs" caret="396" fromTop="21" />
+      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:ChatClient.cs" caret="12666" fromTop="38" />
+      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:Friend.cs" caret="1245" fromTop="35" />
+      <File id="976A1F2C-34B2-4071-B734-224387287731/f:Program.cs" caret="1930" fromTop="19" />
+      <File id="A6F45F78-E28B-45A7-8EF6-EE167DA8FF5C/f:MainForm.cs" caret="10254" fromTop="29" />
+      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:ClientListener.cs" caret="11165" fromTop="18" />
+      <File id="F607C7A1-D498-4ADE-8767-3FF697034F5D/f:Server.cs" caret="57100" fromTop="28" />
     </RecentFiles>
     <RecentEdits>
-      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:Friend.cs" caret="645" fromTop="19" />
-      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:Friend.cs" caret="432" fromTop="13" />
-      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:ChatClient.cs" caret="3571" fromTop="20" />
-      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:ClientListener.cs" caret="3593" fromTop="11" />
-      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:ClientListener.cs" caret="4122" fromTop="20" />
-      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:ChatClient.cs" caret="4464" fromTop="15" />
-      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:ChatClient.cs" caret="4703" fromTop="20" />
-      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:ChatClient.cs" caret="5047" fromTop="29" />
-      <File id="976A1F2C-34B2-4071-B734-224387287731/f:Program.cs" caret="1137" fromTop="27" />
-      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:ChatClient.cs" caret="1781" fromTop="20" />
-      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:ChatClient.cs" caret="1968" fromTop="27" />
-      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:ChatClient.cs" caret="2288" fromTop="32" />
-      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:tasks.txt" caret="451" fromTop="17" />
-      <File id="976A1F2C-34B2-4071-B734-224387287731/f:Program.cs" caret="1137" fromTop="20" />
-      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:ChatClient.cs" caret="3942" fromTop="29" />
+      <File id="A6F45F78-E28B-45A7-8EF6-EE167DA8FF5C/f:MainForm.cs" caret="7377" fromTop="21" />
+      <File id="A6F45F78-E28B-45A7-8EF6-EE167DA8FF5C/f:MainForm.cs" caret="32236" fromTop="28" />
+      <File id="F607C7A1-D498-4ADE-8767-3FF697034F5D/f:Server.cs" caret="39939" fromTop="29" />
+      <File id="F607C7A1-D498-4ADE-8767-3FF697034F5D/f:Server.cs" caret="39571" fromTop="21" />
+      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:Friend.cs" caret="477" fromTop="17" />
+      <File id="F607C7A1-D498-4ADE-8767-3FF697034F5D/f:Server.cs" caret="5491" fromTop="20" />
+      <File id="A6F45F78-E28B-45A7-8EF6-EE167DA8FF5C/f:MainForm.cs" caret="22956" fromTop="26" />
+      <File id="A6F45F78-E28B-45A7-8EF6-EE167DA8FF5C/f:MainForm.cs" caret="22736" fromTop="21" />
+      <File id="A6F45F78-E28B-45A7-8EF6-EE167DA8FF5C/f:MainForm.cs" caret="11070" fromTop="40" />
+      <File id="A6F45F78-E28B-45A7-8EF6-EE167DA8FF5C/f:MainForm.cs" caret="1337" fromTop="29" />
+      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:Enums.cs" caret="400" fromTop="21" />
+      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:Enums.cs" caret="236" fromTop="12" />
+      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:ClientListener.cs" caret="5922" fromTop="34" />
+      <File id="F607C7A1-D498-4ADE-8767-3FF697034F5D/f:Server.cs" caret="7814" fromTop="20" />
+      <File id="F607C7A1-D498-4ADE-8767-3FF697034F5D/f:Server.cs" caret="35485" fromTop="38" />
+      <File id="F607C7A1-D498-4ADE-8767-3FF697034F5D/f:Server.cs" caret="34377" fromTop="17" />
+      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:ClientListener.cs" caret="5754" fromTop="29" />
+      <File id="F607C7A1-D498-4ADE-8767-3FF697034F5D/f:Server.cs" caret="9419" fromTop="34" />
+      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:ChatClient.cs" caret="12069" fromTop="39" />
+      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:ChatClient.cs" caret="12666" fromTop="38" />
+      <File id="A6F45F78-E28B-45A7-8EF6-EE167DA8FF5C/f:MainForm.cs" caret="10968" fromTop="24" />
+      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:ClientListener.cs" caret="5305" fromTop="21" />
+      <File id="F607C7A1-D498-4ADE-8767-3FF697034F5D/f:Server.cs" caret="33425" fromTop="24" />
+      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:ClientListener.cs" caret="11114" fromTop="25" />
+      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:ClientListener.cs" caret="11424" fromTop="24" />
+      <File id="F607C7A1-D498-4ADE-8767-3FF697034F5D/f:Server.cs" caret="35298" fromTop="28" />
+      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:ClientListener.cs" caret="5577" fromTop="28" />
+      <File id="2F1A2EAA-E5F3-4DBB-A6A7-20D9D3473987/f:ClientListener.cs" caret="11583" fromTop="31" />
+      <File id="F607C7A1-D498-4ADE-8767-3FF697034F5D/f:Server.cs" caret="56663" fromTop="18" />
+      <File id="F607C7A1-D498-4ADE-8767-3FF697034F5D/f:Server.cs" caret="56885" fromTop="23" />
     </RecentEdits>
   </RecentFiles>
   <CompletionStatisticsManager>
     <ItemStatistics item="CSharpCodeCompletionContext">
-      <Item value="if" priority="607" />
-      <Item value="user" priority="31" />
-      <Item value="null" priority="287" />
-      <Item value="password" priority="255" />
-      <Item value="throw" priority="63" />
-      <Item value="new" priority="735" />
+      <Item value="if" priority="1631" />
+      <Item value="user" priority="63" />
+      <Item value="null" priority="415" />
+      <Item value="password" priority="319" />
+      <Item value="throw" priority="127" />
+      <Item value="new" priority="1247" />
       <Item value="ExecutionEngineException" priority="29" />
-      <Item value="Exception" priority="29" />
-      <Item value="public" priority="415" />
-      <Item value="void" priority="575" />
-      <Item value="string" priority="1374" />
-      <Item value="Friend`0" priority="122" />
-      <Item value="client" priority="128" />
-      <Item value="ChatClient" priority="59" />
-      <Item value="using" priority="30" />
-      <Item value="try" priority="95" />
-      <Item value="ChatClient`0" priority="95" />
+      <Item value="Exception" priority="58" />
+      <Item value="public" priority="575" />
+      <Item value="void" priority="767" />
+      <Item value="string" priority="2302" />
+      <Item value="Friend`0" priority="154" />
+      <Item value="client" priority="160" />
+      <Item value="ChatClient" priority="88" />
+      <Item value="using" priority="92" />
+      <Item value="try" priority="255" />
+      <Item value="ChatClient`0" priority="159" />
       <Item value="IntPtr`0" priority="31" />
-      <Item value="int" priority="607" />
-      <Item value="cw" priority="1183" />
-      <Item value="ex" priority="63" />
-      <Item value="_tcpClient" priority="159" />
+      <Item value="int" priority="990" />
+      <Item value="cw" priority="2111" />
+      <Item value="ex" priority="95" />
+      <Item value="_tcpClient" priority="474" />
       <Item value="TcpClient" priority="28" />
-      <Item value="ip" priority="95" />
+      <Item value="ip" priority="127" />
       <Item value="stm" priority="447" />
-      <Item value="ba" priority="287" />
-      <Item value="Length" priority="80" />
-      <Item value="return" priority="319" />
-      <Item value="chatClient" priority="256" />
-      <Item value="Chat" priority="63" />
+      <Item value="ba" priority="319" />
+      <Item value="Length" priority="161" />
+      <Item value="return" priority="735" />
+      <Item value="chatClient" priority="320" />
+      <Item value="Chat" priority="125" />
       <Item value="BitConverter`0" priority="127" />
-      <Item value="Array`0" priority="63" />
-      <Item value="length" priority="512" />
-      <Item value="byte" priority="423" />
-      <Item value="Encoding`0" priority="319" />
-      <Item value="response" priority="31" />
+      <Item value="Array`0" priority="95" />
+      <Item value="length" priority="608" />
+      <Item value="byte" priority="667" />
+      <Item value="Encoding`0" priority="351" />
+      <Item value="response" priority="351" />
       <Item value="_AppDomain`0" priority="63" />
       <Item value="String`0" priority="63" />
       <Item value="enum" priority="61" />
       <Item value="ThreadStaticAttribute" priority="29" />
-      <Item value="static" priority="255" />
-      <Item value="private" priority="447" />
-      <Item value="while" priority="31" />
-      <Item value="Thread`0" priority="63" />
+      <Item value="static" priority="287" />
+      <Item value="private" priority="735" />
+      <Item value="while" priority="95" />
+      <Item value="Thread`0" priority="191" />
       <Item value="clientPort" priority="95" />
       <Item value="ClientListener`0" priority="191" />
       <Item value="ServerOperation`0" priority="159" />
-      <Item value="catch" priority="159" />
-      <Item value="Exception`0" priority="186" />
-      <Item value="Thread" priority="58" />
+      <Item value="catch" priority="287" />
+      <Item value="Exception`0" priority="378" />
+      <Item value="Thread" priority="88" />
       <Item value="TcpListener`0" priority="63" />
-      <Item value="stream" priority="512" />
-      <Item value="k" priority="95" />
-      <Item value="b" priority="447" />
-      <Item value="else" priority="95" />
+      <Item value="stream" priority="800" />
+      <Item value="k" priority="159" />
+      <Item value="b" priority="543" />
+      <Item value="else" priority="415" />
       <Item value="CopyTo`0" priority="26" />
       <Item value="b2" priority="63" />
-      <Item value="users" priority="63" />
+      <Item value="users" priority="95" />
       <Item value="usr" priority="63" />
       <Item value="SelectMode`0" priority="31" />
       <Item value="Attribute`0" priority="26" />
       <Item value="p" priority="63" />
-      <Item value="from" priority="31" />
-      <Item value="foreach" priority="127" />
-      <Item value="username" priority="351" />
+      <Item value="from" priority="63" />
+      <Item value="foreach" priority="159" />
+      <Item value="username" priority="607" />
       <Item value="usernameLength" priority="63" />
-      <Item value="bytes" priority="31" />
+      <Item value="bytes" priority="63" />
       <Item value="option" priority="94" />
       <Item value="GetHashCode`0" priority="31" />
       <Item value="_name" priority="31" />
-      <Item value="this" priority="159" />
+      <Item value="this" priority="767" />
       <Item value="name" priority="31" />
-      <Item value="port" priority="31" />
+      <Item value="port" priority="159" />
       <Item value="friendsXml" priority="95" />
-      <Item value="friends" priority="127" />
+      <Item value="friends" priority="159" />
       <Item value="Friend" priority="86" />
-      <Item value="List" priority="31" />
+      <Item value="List" priority="63" />
       <Item value="NewsStyleUriParser`0" priority="26" />
       <Item value="List&lt;Friend&gt;" priority="57" />
-      <Item value="friend" priority="287" />
+      <Item value="friend" priority="511" />
       <Item value="XAttribute`0" priority="31" />
       <Item value="XElement`0" priority="31" />
       <Item value="address" priority="63" />
-      <Item value="break" priority="191" />
-      <Item value="char" priority="31" />
-      <Item value="message" priority="127" />
+      <Item value="break" priority="319" />
+      <Item value="char" priority="89" />
+      <Item value="message" priority="447" />
       <Item value="XmlTextReader" priority="28" />
       <Item value="chatClient2" priority="31" />
       <Item value="receiveMessage`0" priority="31" />
-      <Item value="method" priority="64" />
-      <Item value="Action`0" priority="31" />
+      <Item value="method" priority="97" />
+      <Item value="Action`0" priority="95" />
       <Item value="SetMessageReceiver`0" priority="31" />
       <Item value="_clientListener" priority="31" />
       <Item value="ClientListener" priority="28" />
@@ -131,86 +148,172 @@
       <Item value="Send`0" priority="223" />
       <Item value="SendPacketsElement`0" priority="31" />
       <Item value="number" priority="63" />
-      <Item value="var" priority="95" />
+      <Item value="var" priority="159" />
       <Item value="FileStream`0" priority="63" />
       <Item value="FileStream" priority="57" />
-      <Item value="filePath" priority="31" />
+      <Item value="filePath" priority="95" />
       <Item value="FileMode`0" priority="63" />
       <Item value="FileAccess`0" priority="63" />
       <Item value="GetFriend`0" priority="63" />
-      <Item value="fileStream" priority="289" />
-      <Item value="switch" priority="63" />
-      <Item value="case" priority="127" />
+      <Item value="fileStream" priority="321" />
+      <Item value="switch" priority="90" />
+      <Item value="case" priority="255" />
       <Item value="default" priority="31" />
       <Item value="EventWaitHandle`0" priority="31" />
       <Item value="Int64`0" priority="31" />
-      <Item value="bool" priority="63" />
-      <Item value="true" priority="31" />
+      <Item value="bool" priority="223" />
+      <Item value="true" priority="95" />
       <Item value="ConfirmFileReceivement`0" priority="31" />
-      <Item value="GetSavePath`0" priority="31" />
-      <Item value="Func" priority="31" />
+      <Item value="GetSavePath`0" priority="128" />
+      <Item value="Func" priority="95" />
       <Item value="confirmationMethod" priority="97" />
       <Item value="getPathMethod" priority="95" />
       <Item value="_confirmatFileReceivement" priority="63" />
       <Item value="_getPath" priority="26" />
-      <Item value="path" priority="31" />
-      <Item value="filename" priority="63" />
-      <Item value="File`0" priority="31" />
+      <Item value="path" priority="63" />
+      <Item value="filename" priority="351" />
+      <Item value="File`0" priority="95" />
       <Item value="ArgumentException" priority="26" />
       <Item value="NullReferenceException" priority="26" />
       <Item value="connStream" priority="31" />
-      <Item value="object" priority="95" />
-      <Item value="_connStream" priority="127" />
+      <Item value="object" priority="153" />
+      <Item value="_connStream" priority="191" />
       <Item value="operation" priority="95" />
       <Item value="params" priority="63" />
       <Item value="objects" priority="59" />
-      <Item value="obj" priority="63" />
+      <Item value="obj" priority="95" />
       <Item value="is" priority="31" />
       <Item value="as" priority="31" />
       <Item value="ReadResponse`0" priority="31" />
-      <Item value="offset" priority="63" />
+      <Item value="offset" priority="127" />
       <Item value="ClientOperation`0" priority="127" />
       <Item value="LogIn" priority="16" />
-      <Item value="_chatClient" priority="128" />
+      <Item value="_chatClient" priority="1021" />
       <Item value="NullReferenceException`0" priority="31" />
       <Item value="#region" priority="31" />
-      <Item value="#endregion" priority="31" />
-      <Item value="internal" priority="63" />
-      <Item value="ReadString`0" priority="159" />
-      <Item value="ReadInt`0" priority="31" />
+      <Item value="#endregion" priority="63" />
+      <Item value="internal" priority="127" />
+      <Item value="ReadString`0" priority="351" />
+      <Item value="ReadInt`0" priority="63" />
       <Item value="NotifyOperation`0" priority="32" />
-      <Item value="host" priority="63" />
-      <Item value="friendPort" priority="63" />
+      <Item value="host" priority="127" />
+      <Item value="friendPort" priority="95" />
       <Item value="statusMessage" priority="127" />
       <Item value="f" priority="31" />
       <Item value="value" priority="31" />
       <Item value="status" priority="95" />
       <Item value="UpdateFrindStatus`0" priority="31" />
-      <Item value="_statusMessage" priority="31" />
+      <Item value="_statusMessage" priority="63" />
       <Item value="details" priority="63" />
       <Item value="XDocument" priority="57" />
       <Item value="fileStream`0" priority="31" />
-      <Item value="finally" priority="31" />
-      <Item value="currentUser" priority="31" />
+      <Item value="finally" priority="63" />
+      <Item value="currentUser" priority="63" />
       <Item value="ThreadStaticAttribute`0" priority="31" />
+      <Item value="info" priority="95" />
+      <Item value="Int32`0" priority="31" />
+      <Item value="listViewItem" priority="31" />
+      <Item value="notifClient" priority="31" />
+      <Item value="myFriend" priority="191" />
+      <Item value="MessageBox`0" priority="479" />
+      <Item value="Notify" priority="191" />
+      <Item value="MethodAccessException`0" priority="32" />
+      <Item value="Notify`0" priority="31" />
+      <Item value="false" priority="159" />
+      <Item value="connected" priority="191" />
+      <Item value="Connect`0" priority="63" />
+      <Item value="good" priority="31" />
+      <Item value="Random`0" priority="31" />
+      <Item value="Random" priority="28" />
+      <Item value="random" priority="31" />
+      <Item value="_username" priority="31" />
+      <Item value="VerifyConnection`0" priority="32" />
+      <Item value="c" priority="31" />
+      <Item value="SetTcpKeepAlive`0" priority="31" />
+      <Item value="SocketFlags`0" priority="31" />
+      <Item value="NotConnectedException" priority="28" />
+      <Item value="NotConnectedException`0" priority="31" />
+      <Item value="base" priority="31" />
+      <Item value="UserName" priority="31" />
+      <Item value="ulong" priority="31" />
+      <Item value="FileInfo`0" priority="31" />
+      <Item value="Last`1" priority="26" />
+      <Item value="FileSystemInfo`0" priority="26" />
+      <Item value="myLogo" priority="31" />
+      <Item value="Bitmap" priority="29" />
+      <Item value="friendMessage" priority="31" />
+      <Item value="z" priority="31" />
+      <Item value="type" priority="31" />
+      <Item value="BufferedStream`0" priority="31" />
+      <Item value="relation" priority="95" />
+      <Item value="tuple" priority="31" />
+      <Item value="Delegate`0" priority="31" />
+      <Item value="StartPosition" priority="31" />
+      <Item value="WriteMessage`0" priority="63" />
+      <Item value="Form`0" priority="26" />
+      <Item value="Application`0" priority="127" />
+      <Item value="ReceiveMessage`0" priority="63" />
+      <Item value="ReceiveMessageDelegate" priority="28" />
+      <Item value="d" priority="95" />
+      <Item value="myPort" priority="31" />
+      <Item value="notificationsPort" priority="31" />
+      <Item value="Fo`0" priority="31" />
+      <Item value="Fourth" priority="31" />
+      <Item value="size" priority="32" />
+      <Item value="saveDialog" priority="63" />
+      <Item value="delegate" priority="31" />
+      <Item value="GetSavePathCallback" priority="28" />
+      <Item value="extension" priority="63" />
+      <Item value="textBox2" priority="31" />
+      <Item value="len" priority="31" />
+      <Item value="_string" priority="31" />
+      <Item value="Message`0" priority="31" />
+      <Item value="dataXml" priority="31" />
+      <Item value="Color" priority="28" />
+      <Item value="ConfirmFriendRequest`0" priority="31" />
+      <Item value="ComRegisterFunctionAttribute`0" priority="31" />
+      <Item value="ConfirmFriendRequest" priority="31" />
+      <Item value="AddNewFriend" priority="16" />
+      <Item value="element" priority="64" />
+      <Item value="xmlFile" priority="31" />
+      <Item value="intLength" priority="31" />
+      <Item value="total" priority="62" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Exception">
       <Item value="Message" priority="53" />
+      <Item value="ToString`0" priority="53" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Net.Sockets.TcpClient">
       <Item value="Connect`0" priority="26" />
       <Item value="GetStream`0" priority="80" />
       <Item value="Close`0" priority="26" />
+      <Item value="Connected" priority="26" />
+      <Item value="Client" priority="161" />
+      <Item value="SendTimeout" priority="26" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.IO.Stream">
-      <Item value="WriteByte`0" priority="188" />
-      <Item value="ReadByte`0" priority="134" />
-      <Item value="Read`0" priority="80" />
+      <Item value="WriteByte`0" priority="269" />
+      <Item value="ReadByte`0" priority="161" />
+      <Item value="Read`0" priority="107" />
+      <Item value="Write`0" priority="26" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:Chat.ChatClient">
       <Item value="Login`0" priority="53" />
-      <Item value="SendMessage`0" priority="26" />
-      <Item value="SendFile`0" priority="26" />
+      <Item value="SendMessage`0" priority="80" />
+      <Item value="SendFile`0" priority="80" />
+      <Item value="SignIn`0" priority="26" />
+      <Item value="SetMessageReceiver`0" priority="26" />
+      <Item value="SetNotifies`0" priority="26" />
+      <Item value="_ip" priority="26" />
+      <Item value="_port" priority="26" />
+      <Item value="Notify" priority="157" />
+      <Item value="SignUp`0" priority="26" />
+      <Item value="SendFriendRequest`0" priority="26" />
+      <Item value="ChangeStatus`0" priority="80" />
+      <Item value="_username" priority="26" />
+      <Item value="_statusMessage" priority="26" />
+      <Item value="StatusMessage" priority="26" />
+      <Item value="ConfirmFriendRequest" priority="53" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.BitConverter">
       <Item value="GetBytes`0" priority="107" />
@@ -218,28 +321,32 @@
       <Item value="ToInt64`0" priority="22" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.Array">
-      <Item value="Reverse`0" priority="26" />
+      <Item value="Reverse`0" priority="80" />
       <Item value="Copy`0" priority="26" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.Text.Encoding">
       <Item value="ASCII" priority="26" />
-      <Item value="UTF8" priority="299" />
+      <Item value="UTF8" priority="326" />
       <Item value="GetEncoding`0" priority="26" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Text.Encoding">
       <Item value="GetString`0" priority="107" />
-      <Item value="GetBytes`0" priority="26" />
+      <Item value="GetBytes`0" priority="53" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.String">
       <Item value="Equals`0" priority="26" />
-      <Item value="Length" priority="81" />
+      <Item value="Length" priority="108" />
       <Item value="ToString`0" priority="27" />
+      <Item value="Split`0" priority="54" />
+      <Item value="Remove`0" priority="26" />
+      <Item value="LastIndexOf`0" priority="53" />
+      <Item value="Substring`0" priority="26" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Threading.Thread">
-      <Item value="Start`0" priority="53" />
+      <Item value="Start`0" priority="80" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.Threading.Thread">
-      <Item value="Sleep`0" priority="53" />
+      <Item value="Sleep`0" priority="107" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@Chat.ServerOperation">
       <Item value="SignIn" priority="26" />
@@ -251,19 +358,20 @@
       <Item value="Run`0" priority="26" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Xml.Linq.XDocument">
-      <Item value="Root" priority="134" />
+      <Item value="Root" priority="215" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Xml.Linq.XElement">
-      <Item value="Element`0" priority="26" />
+      <Item value="Element`0" priority="53" />
       <Item value="Attribute`0" priority="161" />
-      <Item value="Elements`0" priority="134" />
-      <Item value="Value" priority="26" />
+      <Item value="Elements`0" priority="215" />
+      <Item value="Value" priority="53" />
+      <Item value="ToString`0" priority="53" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Collections.Generic.IEnumerable`1">
       <Item value="Where`1" priority="26" />
       <Item value="Select`2" priority="26" />
       <Item value="First`1" priority="53" />
-      <Item value="ToString`0" priority="26" />
+      <Item value="ToString`0" priority="80" />
       <Item value="Count`1" priority="26" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Xml.Linq.XAttribute">
@@ -273,14 +381,15 @@
       <Item value="_name" priority="26" />
       <Item value="_port" priority="26" />
       <Item value="_ip" priority="26" />
-      <Item value="Name" priority="53" />
+      <Item value="Name" priority="80" />
       <Item value="Ip" priority="53" />
       <Item value="Port" priority="53" />
-      <Item value="StatusMessage" priority="27" />
-      <Item value="Status" priority="26" />
+      <Item value="StatusMessage" priority="54" />
+      <Item value="Status" priority="80" />
+      <Item value="_statusMessage" priority="26" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.Int32">
-      <Item value="Parse`0" priority="26" />
+      <Item value="Parse`0" priority="53" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.IO.FileMode">
       <Item value="Open" priority="26" />
@@ -294,11 +403,12 @@
       <Item value="Length" priority="49" />
       <Item value="Read`0" priority="26" />
       <Item value="Write`0" priority="26" />
-      <Item value="Close`0" priority="53" />
+      <Item value="Close`0" priority="80" />
       <Item value="Dispose`0" priority="26" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Object">
       <Item value="ToString`0" priority="26" />
+      <Item value="GetType`0" priority="26" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@Chat.ClientOperation">
       <Item value="FriendRequest" priority="26" />
@@ -308,6 +418,94 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Collections.Generic.List`1">
       <Item value="Where`1" priority="26" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:Client.ConnectingSettingsData">
+      <Item value="port" priority="53" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.Windows.Forms.MessageBox">
+      <Item value="Show`0" priority="431" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Windows.Forms.TextBox">
+      <Item value="Text" priority="134" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:Client.MainForm">
+      <Item value="Close`0" priority="26" />
+      <Item value="textBox2" priority="80" />
+      <Item value="Form1_Load`0" priority="26" />
+      <Item value="Invoke`0" priority="26" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Random">
+      <Item value="Next`0" priority="26" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Windows.Forms.NotifyIcon">
+      <Item value="ContextMenu" priority="22" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Net.Sockets.Socket">
+      <Item value="IOControl`0" priority="26" />
+      <Item value="Send`0" priority="53" />
+      <Item value="RemoteEndPoint" priority="26" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.IO.FileInfo">
+      <Item value="Name" priority="26" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.IO.File">
+      <Item value="ReadAllText`0" priority="26" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.Windows.Forms.PictureBoxSizeMode">
+      <Item value="CenterImage" priority="27" />
+      <Item value="AutoSize" priority="53" />
+      <Item value="Zoom" priority="26" />
+      <Item value="Normal" priority="26" />
+      <Item value="StretchImage" priority="27" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Type">
+      <Item value="ToString`0" priority="26" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ChatServer.Server+MyTuple`4">
+      <Item value="Second" priority="26" />
+      <Item value="Third" priority="26" />
+      <Item value="Fourth" priority="53" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ChatServer.Server">
+      <Item value="NotifyFriend`0" priority="26" />
+      <Item value="Write`0" priority="53" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.Windows.Forms.Application">
+      <Item value="OpenForms" priority="53" />
+      <Item value="Exit`0" priority="26" />
+      <Item value="ExitThread`0" priority="26" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Windows.Forms.Form">
+      <Item value="InvokeRequired" priority="53" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:Client.MainForm+ReceiveMessageCallback">
+      <Item value="Invoke`0" priority="26" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Net.EndPoint">
+      <Item value="AddressFamily" priority="26" />
+      <Item value="ToString`0" priority="26" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Windows.Forms.ListViewItem">
+      <Item value="SubItems" priority="53" />
+      <Item value="ImageIndex" priority="27" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Windows.Forms.ListViewItem+ListViewSubItemCollection">
+      <Item value="Add`0" priority="26" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Windows.Forms.SaveFileDialog">
+      <Item value="FileName" priority="26" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.IO.Path">
+      <Item value="GetFullPath`0" priority="22" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Int32">
+      <Item value="ToString`0" priority="26" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Windows.Forms.Control+ControlCollection">
+      <Item value="Remove`0" priority="27" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.Drawing.Color">
+      <Item value="FromArgb`0" priority="55" />
     </ItemStatistics>
   </CompletionStatisticsManager>
   <NAntValidationSettings>
@@ -329,4 +527,9 @@
       <setting name="SolutionAnalysisEnabled">False</setting>
     </boolean>
   </SettingsComponent>
+  <Bookmarks>
+    <Bookmark owner="NumberedBookmarkManager" id="Bookmark1" file-id="F607C7A1-D498-4ADE-8767-3FF697034F5D/f:Server.cs" coords="(Doc Ln 686 Col 0)" />
+    <Bookmark owner="NumberedBookmarkManager" id="Bookmark2" file-id="F607C7A1-D498-4ADE-8767-3FF697034F5D/f:Server.cs" coords="(Doc Ln 389 Col 60)" />
+    <Bookmark owner="NumberedBookmarkManager" id="Bookmark3" file-id="F607C7A1-D498-4ADE-8767-3FF697034F5D/f:Server.cs" coords="(Doc Ln 170 Col 31)" />
+  </Bookmarks>
 </Configuration>

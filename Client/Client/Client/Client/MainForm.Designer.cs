@@ -60,6 +60,7 @@ namespace Client
             this.signOutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addFriendToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.menuStrip1.SuspendLayout();
@@ -248,11 +249,11 @@ namespace Client
             // optionsToolStripMenuItem
             // 
             this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.addFriendToolStripMenuItem,
             this.settingsToolStripMenuItem,
             this.changeLogoToolStripMenuItem,
             this.signOutToolStripMenuItem,
-            this.exitToolStripMenuItem,
-            this.addFriendToolStripMenuItem});
+            this.exitToolStripMenuItem});
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
             this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
             this.optionsToolStripMenuItem.Text = "Options";
@@ -260,14 +261,14 @@ namespace Client
             // settingsToolStripMenuItem
             // 
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
             this.settingsToolStripMenuItem.Text = "Settings...";
             this.settingsToolStripMenuItem.Click += new System.EventHandler(this.settingsToolStripMenuItem_Click);
             // 
             // changeLogoToolStripMenuItem
             // 
             this.changeLogoToolStripMenuItem.Name = "changeLogoToolStripMenuItem";
-            this.changeLogoToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.changeLogoToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
             this.changeLogoToolStripMenuItem.Text = "Change Logo";
             this.changeLogoToolStripMenuItem.Visible = false;
             this.changeLogoToolStripMenuItem.Click += new System.EventHandler(this.ChangeLogo);
@@ -275,7 +276,7 @@ namespace Client
             // signOutToolStripMenuItem
             // 
             this.signOutToolStripMenuItem.Name = "signOutToolStripMenuItem";
-            this.signOutToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.signOutToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
             this.signOutToolStripMenuItem.Text = "Sign out...";
             this.signOutToolStripMenuItem.Visible = false;
             this.signOutToolStripMenuItem.Click += new System.EventHandler(this.signOutToolStripMenuItem_Click);
@@ -283,16 +284,23 @@ namespace Client
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.ExitToolStripMenuItem_Click);
             // 
             // addFriendToolStripMenuItem
             // 
             this.addFriendToolStripMenuItem.Name = "addFriendToolStripMenuItem";
-            this.addFriendToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.addFriendToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
             this.addFriendToolStripMenuItem.Text = "Add Friend";
             this.addFriendToolStripMenuItem.Click += new System.EventHandler(this.addFriendToolStripMenuItem_Click);
+            this.addFriendToolStripMenuItem.Visible = false;
+            // 
+            // imageList1
+            // 
+            this.imageList1.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList1.ImageStream")));
+            this.imageList1.TransparentColor = System.Drawing.Color.Silver;
+            this.imageList1.Images.SetKeyName(0, "user-icon.png");
             // 
             // MainForm
             // 
@@ -374,6 +382,7 @@ namespace Client
         }
 
         private ToolStripMenuItem addFriendToolStripMenuItem;
+        private ImageList imageList1;
     }
 }
 

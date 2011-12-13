@@ -15,6 +15,7 @@ namespace Chat
             this._status = status;
             if(_statusMessage != null)
                 this._statusMessage = statusMessage;
+//            this._statusMessage += port.ToString();
         }
 
         private string _name;

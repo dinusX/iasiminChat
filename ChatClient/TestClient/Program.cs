@@ -13,6 +13,7 @@ namespace TestClient
         {
             int port = 8001;
             string ip = "127.0.0.1";
+//            string ip = "172.17.50.45";
 
             ChatClient chatClient = null;
             ChatClient chatClient2 = null;
@@ -39,7 +40,8 @@ namespace TestClient
             chatClient2.SignIn("George", "HisPassword");
 //            Console.WriteLine("Sending friend request");
 
-            //            chatClient.SendFriendRequest("George");
+            //chatClient.SendFriendRequest("George");
+            chatClient2.SendFriendRequest("Dinu");
 
             chatClient.SetMessageReceiver(ReceiveMessage);
             chatClient2.SetMessageReceiver(ReceiveMessage);
@@ -49,7 +51,6 @@ namespace TestClient
             chatClient.SendMessage("George", "Hi George");
 
 //            chatClient.SendFile("George", @"C:\nap3.gif");
-
             chatClient.ChangeStatus("Dinu Status");
 
             chatClient.SignOut();

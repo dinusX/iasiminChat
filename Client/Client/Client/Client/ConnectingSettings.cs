@@ -18,6 +18,12 @@ namespace Client
             InitializeComponent();
         }
 
+//        private MainForm _parent = null;
+//        public ConnectingSettings(MainForm parent) : this()
+//        {
+//            _parent = parent;
+//        }
+
         private void Confirm(object sender, EventArgs e)
         {
             Stream stream = File.Open("config.info", FileMode.Create);
@@ -35,6 +41,8 @@ namespace Client
             MainForm pointerToMainForm = (MainForm)Application.OpenForms[0];
             pointerToMainForm.ShowMessageNotifyIcon(" s-a schimbat Ip/portul ");
 
+//            _parent.UpdateChatClient(retrievedIP, Int32.Parse(retrievedPort));
+            pointerToMainForm.UpdateChatClient("fdsfs", 465);
             this.Close();
 
             //Form1.notifyIcon1.ShowBalloonTip(1500, "info", "client nou", ToolTipIcon.Info);

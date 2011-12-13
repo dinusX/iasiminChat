@@ -11,6 +11,9 @@ namespace Chat
         SignUp = 3,
         FriendRequest =4,
         ChangeStatus =5,
+
+
+        AddOfflineMessage = 9
     }
 
     enum NotifyOperation
@@ -19,6 +22,7 @@ namespace Chat
         ChangeStatus = 2,
         LogOut = 3,
         FriendRequest = 4,
+        AddNewFriend = 5
     }
 
     enum ClientOperation

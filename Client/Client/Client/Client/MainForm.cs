@@ -10,6 +10,8 @@ using System.Text.RegularExpressions;
 using Chat;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Threading;
+using System.Diagnostics;
 
 namespace Client
 {
@@ -38,7 +40,9 @@ namespace Client
             _chatClient = new ChatClient(info.ip, port);
             _chatClient.SetMessageReceiver(ReceiveMessage);
             _chatClient.SetFileReceiver(ConfirmFileReceivement, GetSavePath);
+            _chatClient.SetFriendRequestConfirmation(ConfirmFriendRequest);
             _chatClient.SetNotifier(Notify);
+
             //or in other place
             
             //End Dinu!    
@@ -55,6 +59,17 @@ namespace Client
                 this.notifyIcon1.ContextMenu = new ContextMenu();
             this.notifyIcon1.ContextMenu.MenuItems.Add(0, new MenuItem("Exit...", new System.EventHandler(this.ExitClick)));
 
+        }
+        
+        public void UpdateChatClient(string ip, int port)
+        {
+            _chatClient.SignOut();
+
+            _chatClient = new ChatClient(ip, port);
+            _chatClient.SetMessageReceiver(ReceiveMessage);
+            _chatClient.SetFileReceiver(ConfirmFileReceivement, GetSavePath);
+            _chatClient.SetFriendRequestConfirmation(ConfirmFriendRequest);
+            _chatClient.SetNotifier(Notify);
         }
 
         private void Sign_Up(object sender, EventArgs e)
@@ -186,23 +201,63 @@ namespace Client
                 string username = this.textBox1.Text;
                 string password = this.textBox2.Text;
 
-                _chatClient.SignIn(username, password);
-                //TODO check if successful signIn
-                //if signIn
-                this.textBox1.Text = username;
-                this.textBox2.Text = "My Status"; //TODO load status
+                int response = _chatClient.SignIn(username, password);
+                if (response == 0)
+                {
+                    //TODO check if successful signIn
+                    //if signIn
+                    this.textBox1.Text = username;
+                    this.textBox2.Text = _chatClient.StatusMessage; 
 
-                //End Dinu!
-                LoadUserListForm();
+                    //End Dinu!
+                    LoadUserListForm();
+//                    string path = GetSavePath("me.txt");
+//                    MessageBox.Show("path " + path);
+                }
             }
 
         }
 
+        delegate void ReceiveMessageCallback(string username, string message);
+
         //Start Dinu!  TODO improve
         void ReceiveMessage(string username, string message)
         {
-            MessageBox.Show("Received Message from: " + username + " \nMessage: " + message);
-//            Console.WriteLine("Received Message from: {0} \nMessage: {1}", username, message);
+            if (Application.OpenForms[0].InvokeRequired)
+            {
+                ReceiveMessageCallback d = new ReceiveMessageCallback(ReceiveMessage);
+                this.Invoke(d, new object[] { username, message });
+            }
+            else
+            {
+                if (username != null && username != "" && message != null && message != "")
+                {
+                    foreach (Form OpenForm in Application.OpenForms)
+                    {
+
+                        if (OpenForm is Conversation)
+                        {
+                            Conversation temp = (Conversation)OpenForm;
+                            if (username == temp.id)
+                            {
+//                                OpenForm.TopMost = true;
+                                OpenForm.Focus();
+                                temp.Receive_Msg_Auto(message);
+                                //                                MessageBox.Show("Found");
+                                return;
+                            }
+                        }
+                    }
+
+                    //TODO send maybe my name and my/other logo rethink
+                    Conversation convFriend = new Conversation(_chatClient, username, null, username, "Tmp Status"); //TODO modify
+                    convFriend.Show();
+                    convFriend.Receive_Msg_Auto(message);
+                    //                    MessageBox.Show("Created new");
+                }
+            }
+
+            // Console.WriteLine("Received Message from: {0} \nMessage: {1}", username, message);
         }
 
         void Notify(int option, string message)
@@ -215,14 +270,18 @@ namespace Client
             switch(option)
             {
                 case 1:
+                    //TODO do this
                     MessageBox.Show(message);
+                    signOutToolStripMenuItem_Click();
 //                    Console.WriteLine("Connection Died:\n " + message);
                     break;
                 case 2:
-                    MessageBox.Show("User Information Changed: \n ");
+                    RefreshFriendsList();
+//                    MessageBox.Show(message);
                     break;
                 case 3:
-                    Console.WriteLine(message);
+//                    Console.WriteLine(message);
+                    MessageBox.Show(message);
                     break;
             }
 
@@ -231,12 +290,55 @@ namespace Client
 
         bool ConfirmFileReceivement(string filename, long size)
         {
-            return true;
+            //true - accept ; false - don't accept
+            if (MessageBox.Show("Do you want to receive file \"" + filename + "\" of size: " + (int)(size/1024) + " KB ?", "Recieve file", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                return true;
+            }
+            else return false;
+           
         }
+
+        bool ConfirmFriendRequest(string username, string message)
+        {
+            return
+                (MessageBox.Show("Do you accept user " + username + " as friend ?\nMessage: " + message, "Friend Request",
+                                 MessageBoxButtons.YesNo) == DialogResult.Yes);
+        }
+
+        delegate string GetSavePathCallback(string filename);
 
         string GetSavePath(string filename)
         {
-            return @"D:\";
+//            MessageBox.Show("Should be");
+            if (Application.OpenForms[0].InvokeRequired)
+            {
+                GetSavePathCallback d = new GetSavePathCallback(GetSavePath);
+                return (string)this.Invoke(d, new object[] {filename});
+            }
+            else
+            {
+
+                SaveFileDialog saveDialog = new SaveFileDialog();
+                if(filename.LastIndexOf('.')> 0)
+                {
+                    string extension = filename.Substring(filename.LastIndexOf('.') + 1);
+                    saveDialog.Filter = "specific files (*."+extension+")|*."+extension+"|All files (*.*)|*.*";
+                }
+                else
+                {
+                    saveDialog.Filter = "All files (*.*)|*.*";
+                }
+                saveDialog.FileName = filename;
+                
+                string path = null;
+                if (saveDialog.ShowDialog() == DialogResult.OK)
+                {
+                    path = Path.GetFullPath(saveDialog.FileName);
+                }
+                return path;
+            }
+            
         }
 
 
@@ -256,6 +358,7 @@ namespace Client
             this.settingsToolStripMenuItem.Visible = false;
             this.signOutToolStripMenuItem.Visible = true;
             this.changeLogoToolStripMenuItem.Visible = true;
+            this.addFriendToolStripMenuItem.Visible = true;
 
 
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(UserList));
@@ -361,81 +464,129 @@ namespace Client
 
         private void PopulateListView()
         {
-//            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem();
-//            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem();
-//            listViewItem1.UseItemStyleForSubItems = false;
-            listView1.Sorting = SortOrder.Ascending;
+       //commnet
+            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem();
+            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem();  
+        
+         listViewItem1.UseItemStyleForSubItems = false;
+        //commnet
+         
+           listView1.Sorting = SortOrder.Ascending;
             listView1.AllowColumnReorder = true;
+            listView1.SmallImageList = imageList1;
+            
 
+            //comment
+            this.listView1.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
+            listViewItem1,
+            listViewItem2});
+            //commnet
 
-
-//            this.listView1.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-//            listViewItem1,
-//            listViewItem2});
-
-            ColumnHeader header1, header2, header3;
+            ColumnHeader header1, header2, header3, header4;
             header1 = new ColumnHeader();
             header2 = new ColumnHeader();
             header3 = new ColumnHeader();
+            header4 = new ColumnHeader();
 
             header1.Text = "";
             header1.TextAlign = HorizontalAlignment.Center;
-            header1.Width = 15;
-
+            header1.Width = 40;
+            
 
             header2.Text = "Username";
             header2.TextAlign = HorizontalAlignment.Center;
-            header2.Width = 120;
+            header2.Width = 110;
 
             header3.TextAlign = HorizontalAlignment.Left;
             header3.Text = "Status message";
-            header3.Width = 140;
+            header3.Width = 115;
+
+            header4.TextAlign = HorizontalAlignment.Left;
+            header4.Text = "";
+            header4.Width = 5;
+
+
 
             //this.listView1.Columns.Add("", 15);
             this.listView1.Columns.Add(header1);
             this.listView1.Columns.Add(header2);
             this.listView1.Columns.Add(header3);
+            this.listView1.Columns.Add(header4);
+
             //this.listView1.SetBounds(0, 0, 100, 100);
 
 
             // this.listView1
-
-
-//            listViewItem1.UseItemStyleForSubItems = false;
-//            listViewItem1.BackColor = Color.Red;
-//            listViewItem1.SubItems.Add("Maria Ionescu");
-//            listViewItem1.SubItems.Add("mananc..");
-//            //listViewItem1.SubItems[0].
-//            listViewItem1.SubItems[1].Font = new Font(listViewItem1.SubItems[1].Font, FontStyle.Bold);
+            
+            //comment
+//                        listViewItem1.UseItemStyleForSubItems = false;
+//                        listViewItem1.BackColor = Color.Red;
+//                        listViewItem1.ForeColor = Color.Red;
 //
-//            listViewItem2.SubItems.Add("Ion Amariei");
-//            listViewItem2.SubItems.Add("lucrez...");
-//            listViewItem2.UseItemStyleForSubItems = false;
-//            listViewItem2.BackColor = Color.Green;
-//            listViewItem2.SubItems[1].Font = new Font(listViewItem2.SubItems[1].Font, FontStyle.Bold);
+//                        
+//                        listViewItem1.ImageIndex = 0;
+//
+//                        
+//                        listViewItem1.SubItems.Add("Maria Ionescu");
+//                        listViewItem1.SubItems.Add("mananc..");
+//                        listViewItem1.SubItems.Add("");
+//                        listViewItem1.SubItems[3].BackColor = Color.Red;
+//                        
+//                        
+//                        //listViewItem1.SubItems[0].
+//                        listViewItem1.SubItems[1].Font = new Font(listViewItem1.SubItems[1].Font, FontStyle.Bold);
+//                        listViewItem1.BackColor = Color.Red;
+//                        
+//                   
+//                        listViewItem2.ImageIndex = 0;
+//                        
+//                        listViewItem2.SubItems.Add("Ion Amariei");
+//                        listViewItem2.SubItems.Add("lucrez...");
+//                        listViewItem2.SubItems.Add("");
+//                      
+//                        listViewItem2.SubItems[3].BackColor = Color.Green;
+//                        listViewItem2.UseItemStyleForSubItems = false;
+//                        listViewItem2.BackColor = Color.Green;
+//                        listViewItem2.SubItems[1].Font = new Font(listViewItem2.SubItems[1].Font, FontStyle.Bold);
+            //commnet
+            
+            RefreshFriendsList();
+        }
 
+        private void RefreshFriendsList()
+        {
+            //clear all items in the list
+            this.listView1.Items.Clear();//trebuie testat
+            
             ListViewItem friendItem = null;
             var friends = _chatClient.GetFriends();
             foreach (var friend in friends)
             {
                 friendItem = new ListViewItem();
+
+                //TODO inspect ???
+                friendItem.ImageIndex = 0;
                 friendItem.SubItems.Add(friend.Name);
                 friendItem.SubItems.Add(friend.StatusMessage);
+                friendItem.SubItems.Add(""); // TODO inspect?
                 friendItem.UseItemStyleForSubItems = false;
+                //                listViewItem2.SubItems[3].BackColor = Color.Green;
                 if (friend.Online())
                 {
-                    friendItem.BackColor = Color.Green;
+                    //                    friendItem.BackColor = Color.Green;
+                    friendItem.SubItems[3].BackColor = Color.FromArgb(0,205,102);
                 }
                 else
                 {
-                    friendItem.BackColor = Color.Red;
+                    //                    friendItem.BackColor = Color.Red;
+                    friendItem.SubItems[3].BackColor = Color.FromArgb(238,44,44);
                 }
 
                 friendItem.SubItems[1].Font = new Font(friendItem.SubItems[1].Font, FontStyle.Bold);
                 this.listView1.Items.Add(friendItem);
             }
-
         }
+
 
         //TODO improve
         private void Create_Account(object sender, EventArgs e)
@@ -443,9 +594,9 @@ namespace Client
             bool good = true;
             //verificam campurile introduse de utlizator
             //username
-            if (this.textBox1.Text.Length == 0 || this.textBox1.Text.Length < 3)
+            if ( this.textBox1.Text.Length < 3)
             {
-                MessageBox.Show("Username must have at least 8 characters", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+                MessageBox.Show("Username must have at least 3 characters", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
                 textBox1.ForeColor = Color.Red;
                 good = false;
             }
@@ -453,9 +604,9 @@ namespace Client
 
             //parola
             //trebuie parola alpha- numerica
-            if (this.textBox2.Text.Length == 0 || this.textBox2.Text.Length < 6)
+            if ( this.textBox2.Text.Length < 6)
             {
-                MessageBox.Show("Password must have at least 8 characters", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+                MessageBox.Show("Password must have at least 6 characters", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
                 textBox2.ForeColor = Color.Red;
                 good = false;
             }
@@ -463,11 +614,13 @@ namespace Client
 
             if (this.textBox3.Text.Length == 0 || this.textBox3.Text.Length < 6)
             {
-                MessageBox.Show("Password confirmation must have at least 8 characters", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+                MessageBox.Show("Password confirmation must have at least 6 characters", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
                 textBox3.ForeColor = Color.Red;
                 good = false;
             }
             else textBox3.ForeColor = Color.Green;
+            
+            if (!good) return;
 
             if (this.textBox2.Text != this.textBox3.Text)
             {
@@ -482,6 +635,8 @@ namespace Client
                 textBox3.ForeColor = Color.Green;
 
             }
+
+            if (!good) return;
 
             if (!Regex.IsMatch(this.textBox2.Text, @"^[a-zA-Z0-9]+$") && !Regex.IsMatch(this.textBox3.Text, @"^[a-zA-Z0-9]+$"))
             {
@@ -502,11 +657,20 @@ namespace Client
                 string username = this.textBox1.Text;
                 string password = this.textBox2.Text;
 
-                _chatClient.SignUp(username, password);
-
-                //TODO Sign in if successful SignUp
-                _chatClient.SignIn(username, password);
-                //TODO catch response
+                int response = _chatClient.SignUp(username, password);
+                if(response == 0) //Success
+                {
+                    response = _chatClient.SignIn(username, password);
+                    if (response == 0)
+                    {
+                        this.textBox1.Text = username;
+                        this.textBox2.Text = _chatClient.StatusMessage; 
+                        LoadUserListForm();
+                        this.Controls.Remove(this.textBox3); //Delete manual cimpul
+                        this.Controls.Remove(this.pictureBox2);
+                    }
+                }
+                    //Print errors
             }
         }
 
@@ -574,15 +738,15 @@ namespace Client
                             Conversation temp = (Conversation)OpenForm;
                             if (lws.Text == temp.id)
                             {
-                                OpenForm.TopMost = true;
+//                                OpenForm.TopMost = true;
                                 OpenForm.Focus();
-                                marked = 1;
+//                                marked = 1;
                                 break;
                             }
-                            if (marked == 0)
-                            {
-                                OpenForm.TopMost = false;
-                            }
+//                            if (marked == 0)
+//                            {
+//                                OpenForm.TopMost = false;
+//                            }
 
                         }
 
@@ -625,7 +789,23 @@ namespace Client
             this.Controls.Remove(this.listView1);
             this.Controls.Remove(this.menuStrip1);
             this.notifyIcon1.Visible = false;
+            _chatClient.SignOut();
 
+            InitializeComponent();
+            AlignWindow();
+        }
+
+        private void signOutToolStripMenuItem_Click()
+        {
+            this.Controls.Remove(this.pictureBox1);
+            this.Controls.Remove(this.textBox1);
+            this.Controls.Remove(this.textBox2);
+            this.Controls.Remove(this.label1);
+            this.Controls.Remove(this.label2);
+            this.Controls.Remove(this.listView1);
+            this.Controls.Remove(this.menuStrip1);
+            this.notifyIcon1.Visible = false;
+            _chatClient.SignOut();
 
             InitializeComponent();
             AlignWindow();
@@ -661,7 +841,7 @@ namespace Client
 
                 MainForm pointerToMainForm = (MainForm)Application.OpenForms[0];
                 pointerToMainForm.ShowMessageNotifyIcon(" Changed Status");
-
+                _chatClient.ChangeStatus(this.textBox2.Text);
             }
         }
 
@@ -680,6 +860,18 @@ namespace Client
         private void ExitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.signOutToolStripMenuItem_Click(sender, e);
+            Process[] processlist = Process.GetProcesses();
+
+            foreach(Process theprocess in processlist){
+                string infoProcess = "Process: " + theprocess.ProcessName + " ID: " + theprocess.Id;
+                if (theprocess.ProcessName.Contains("Client"))
+                {
+                    //MessageBox.Show(infoProcess);
+                    theprocess.Kill();    
+                }
+                
+
+            }
             this.Close();
             this.Dispose();
         }
@@ -687,7 +879,20 @@ namespace Client
         private void ExitClick(object sender, EventArgs e)
         {
             this.signOutToolStripMenuItem_Click(sender, e);
-            this.Close(); 
+            Process[] processlist = Process.GetProcesses();
+
+            foreach (Process theprocess in processlist)
+            {
+                string infoProcess = "Process: " + theprocess.ProcessName + " ID: " + theprocess.Id;
+                if (theprocess.ProcessName.Contains("Client"))
+                {
+                    //MessageBox.Show(infoProcess);
+                    theprocess.Kill();
+                }
+
+
+            }
+            this.Close();
             this.Dispose();
         }
 
@@ -700,7 +905,29 @@ namespace Client
         //TODO need implementation
         private void addFriendToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            _chatClient.SendFriendRequest("vanea1234");
+            //form nou + comanda executa din form nou spre formul mainForm
+            AddFriend formFriend = new AddFriend();
+            formFriend.Show();
+
+            
+            //_chatClient.SendFriendRequest("vanea1234");
+        }
+        public void call_addFriendToolStripMenuItem(string friendUsername, string message)
+        {
+            //form nou + comanda executa din form nou spre formul mainForm
+
+            int response = _chatClient.SendFriendRequest(friendUsername, message);
+            if (response == 0)
+            {
+                MessageBox.Show("Friend Added");
+            }
+            else
+                if (response == 1)
+                    MessageBox.Show("Nu exista asa user. ");
+                else
+                    if (response == 2)
+                        MessageBox.Show("Userul este deja in lista de prieteni sau a ignorat cererea.");
+            //3. Mai exista o cerere
         }
     }
 }

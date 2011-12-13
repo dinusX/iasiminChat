@@ -25,7 +25,7 @@ namespace Client
             listViewItem1.UseItemStyleForSubItems = false;
             listView1.Sorting = SortOrder.Ascending;
             listView1.AllowColumnReorder = true;
-           
+            
             
             
             this.listView1.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
@@ -41,6 +41,7 @@ namespace Client
 
             //TODO inspect ???
 
+            //listViewItem1.SubItems.
             listViewItem1.SubItems.Add("Maria Ionescu");
             listViewItem1.SubItems.Add("mananc..");
 
