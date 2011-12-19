@@ -42,7 +42,7 @@ namespace Client
             pointerToMainForm.ShowMessageNotifyIcon(" s-a schimbat Ip/portul ");
 
 //            _parent.UpdateChatClient(retrievedIP, Int32.Parse(retrievedPort));
-            pointerToMainForm.UpdateChatClient("fdsfs", 465);
+            pointerToMainForm.UpdateChatClient(retrievedIP, Int32.Parse(retrievedPort));
             this.Close();
 
             //Form1.notifyIcon1.ShowBalloonTip(1500, "info", "client nou", ToolTipIcon.Info);

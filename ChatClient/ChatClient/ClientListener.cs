@@ -17,6 +17,8 @@ namespace Chat
         public int port = 10000; //TODO Change to Random Port
 
         private ChatClient _chatClient = null;
+        private Thread _mainThread = null;
+        private TcpListener _server = null;
 
         public ClientListener(ChatClient chatClient)
         {
@@ -52,13 +54,13 @@ namespace Chat
             try
             {
                 Console.WriteLine("Port : {0}",port);
-                TcpListener server = new TcpListener(IPAddress.Parse(ip), port);
+                _server = new TcpListener(IPAddress.Parse(ip), port);
 
-                server.Start(1000);
-
+                _server.Start(1000);
                 Console.WriteLine("Server started running at {0}:{1}\n", ip, port);
 
-                new Thread(() => ListenToConnections(server)).Start();
+                _mainThread = new Thread(() => ListenToConnections(_server));
+                _mainThread.Start();
 
 
 //                Console.WriteLine("Client Listener Started");
@@ -73,6 +75,7 @@ namespace Chat
         {
             while (true)
             {
+                
                 try
                 {
                     TcpClient client = server.AcceptTcpClient();
@@ -86,6 +89,10 @@ namespace Chat
                 catch (OutOfMemoryException oome) { Console.WriteLine("OutOfMemoryException: {0}", oome); }
                 catch (ThreadStateException tse) { Console.WriteLine("ThreadStateException: {0}", tse); }
                 catch (ArgumentNullException ane) { Console.WriteLine("ArgmunetNullException: {0}", ane); }
+
+                if (!server.Server.IsBound)
+                    break;
+                    
             }
 
         }
@@ -115,46 +122,54 @@ namespace Chat
                         break;
                     case NotifyOperation.ChangeStatus:
                         string statusMessage = ReadString(stream);
-                        _chatClient.UpdateFrindStatus(username, "online", statusMessage);
+                        _chatClient.UpdateFriendStatus(username, "online", statusMessage);
                         Console.WriteLine("Change Status Notif");
                         if(_chatClient.Notify != null)
                             _chatClient.Notify(2, null);
                         break;
                     case NotifyOperation.LogOut:
-                        _chatClient.UpdateFrindStatus(username, "offline");
+                        _chatClient.UpdateFriendStatus(username, "offline");
                         Console.WriteLine("Offline Notif");
                         if(_chatClient.Notify != null)
                             _chatClient.Notify(2, null);
                         break;
                     case NotifyOperation.FriendRequest:
-//                        string friend = ReadString(stream);
-//                        _chatClient.Notify(3, "friend: " + friend);
-                        //TODO ask user ??
-
-                        string message = "";
-//                        if (stream.ReadByte() == 1) //Receiving Invitation Message
-//                        {
+                        _chatClient.Notify(3, "Friend Request");
+                        Console.WriteLine("Received Friend request ");
+                            string message = "";
                             message = ReadString(stream);
-//                        }
-//                            _chatClient.Notify(3, "message: " + message);
+                        Console.WriteLine("Message: " + message);
+
                             if (_chatClient.ConfirmFriendRequest != null && !_chatClient.ConfirmFriendRequest(username, message))
-                                stream.WriteByte(0); //Denied
+                                _chatClient.DenyFriend(username);
                             else
                             {
-                                stream.WriteByte(1); //Success
+                                _chatClient.AcceptFriend(username);
+                                //                                stream.WriteByte(1); //Success
+//                                string xmlString = ReadString(stream, true);
+//                                _chatClient.AddFrind(xmlString);
+//
 //                                if (_chatClient.Notify != null) 
-//                                    _chatClient.Notify(3, "Awaiting for xml file");
-                                string xmlString = ReadString(stream, true);
-                                _chatClient.AddFrind(xmlString);
-
-                                if (_chatClient.Notify != null) 
-                                    _chatClient.Notify(2, null);
+//                                    _chatClient.Notify(2, null);
                             }
                         //Get Confirmation
                         break;
                         case NotifyOperation.AddNewFriend:
+                        Console.WriteLine("Receiving file xml");
+                            //reading xml data about user
+                            string xmlString = ReadString(stream, true);
+                            _chatClient.AddFrind(xmlString);
+                            
+
+                            if (_chatClient.Notify != null) 
+                                _chatClient.Notify(2, null);
 
                         break;
+                        case NotifyOperation.ChangedLogo:
+                            string filename = ReadString(stream);
+                            _chatClient.UpdateFriendLogo(username, filename);
+                        break;
+
                     default:
 //                        string message = ReadString(stream);
                         Console.WriteLine("Other operation: " + operation);
@@ -175,7 +190,7 @@ namespace Chat
 
                             if (_chatClient.ReceiveMessage != null)
                             {
-                                _chatClient.ReceiveMessage(username, message);
+                                _chatClient.ReceiveMessage(username, message, DateTime.Now);
                                 //TODO remove
 //                                if (_chatClient.Notify != null)
 //                                _chatClient.Notify(10,
@@ -209,25 +224,62 @@ namespace Chat
                                 {
                                     Console.WriteLine("Receiving file");
 
-                                    b = new byte[size];
 
-                                    int length = size;
-                                    int k = 0, offset = 0;
-                                    while (length > 0)
-                                    {
-                                        k = stream.Read(b, offset, length);
-                                        Thread.Sleep(10);
-                                        Console.WriteLine("Received: " + k);
-                                        length -= k;
-                                        offset += k;
-//                                        _chatClient.Notify(3, "Received: " + k);
-                                        //TODO + abort
-                                    }
-                                    
                                     FileStream fileStream = new FileStream(path, FileMode.Create, FileAccess.Write);
-                                    fileStream.Write(b, 0, b.Length);
+
+                                    int mb10 = 10*1024*1024; //10 mb
+
+                                    if (size <= mb10) //small files
+                                    {
+                                        b = new byte[size];
+                                        int length = size;
+                                        int k = 0, offset = 0;
+                                        while (length > 0)
+                                        {
+                                            k = stream.Read(b, offset, length);
+                                            Thread.Sleep(10);
+                                            Console.WriteLine("Received: " + k);
+                                            length -= k;
+                                            offset += k;
+                                            //                                        _chatClient.Notify(3, "Received: " + k);
+                                            //TODO + abort
+                                        }
+
+                                        fileStream.Write(b, 0, b.Length);
+                                    }
+                                    else //big files
+                                    {
+
+                                        b = new byte[mb10];
+                                        int length = size;
+                                        while (length > 0)
+                                        {
+                                            int localLength = mb10;
+                                            if (length <= mb10)
+                                                localLength = length;
+                                            length -= localLength;
+                                            int k = 0, offset = 0;
+
+                                            while (localLength > 0)
+                                            {
+                                                k = stream.Read(b, offset, localLength);
+                                                Thread.Sleep(10);
+                                                Console.WriteLine("Received: " + k);
+                                                localLength -= k;
+                                                offset += k;
+                                            }
+
+                                            fileStream.Write(b, 0, offset);
+                                        }
+
+                                        
+                                    }
+
                                     fileStream.Close();
                                     fileStream.Dispose(); 
+
+
+                                    //TODO delete file and close stream in case of error
 
                                     Console.WriteLine("Successfully received");
                                     if(_chatClient.Notify != null)
@@ -300,6 +352,14 @@ namespace Chat
             }
             
             return Encoding.UTF8.GetString(b);
+        }
+
+        internal void Stop()
+        {
+            if(_mainThread != null && _mainThread.IsAlive)
+                _mainThread.Abort();
+            if(_server != null)
+                _server.Stop();
         }
 
     }

@@ -1,71 +1,18 @@
-﻿Friends Request and offline requests
-
-//Friend Request - to be also for offline users
-
+﻿
 //Sending files
 //3. Cancel copy
 //4. Progress
-//5. Notification
-
-
-Add notification when Send File, Add Friend based on response
-Multiple Send Files to be parallel ???? requires multiple ports
-
-
-
-
 
 
 Client:
-Getting ip and port from serialization + saving in form
-Getting data for addFriend
-Solving Conversation Form
+improve speed for offline messages.
+test when try to add unknown friend
+Test Clients
+Improve History
+Treating all errors (like SignIn to other ip:port
 
-Me:
-When LogOff stoping servers ... from ChatListener
-
-checking to get offline on servers
-Get status from xml
-
-
-Solving with offline message
-Solving with unaccepted friends
-
-
-
-change ports to be random for ChatListener
-
-
-
-
-Server:
-when command 2 make offline all users
-
-delete friend request
-delete sending 0 from client to server when sending message from client to server when adding friend
-
-
-
-
-Need to be done.
-Delete unused logos.
-
-
-
-Friend Request blocheaza tot formul
-
-
-
-3 Importante:
-1. Improving file sending
-2. History
-3. Offline Messages
-
-
----------------------------------------
 Future:
-//TODO Online/NA/Invisible ..
-//Logo send
+//Logo send -->Save Logos: Delete unused logos.
 
 
 

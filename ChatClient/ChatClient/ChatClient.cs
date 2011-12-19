@@ -25,6 +25,9 @@ namespace Chat
 
         private string _username = "";
         private string _statusMessage = "";
+        private string _logoFileName = "";
+
+        private Thread _verifyThread = null;
 
         public string UserName
         {
@@ -36,11 +39,15 @@ namespace Chat
             get { return _statusMessage; }
         }
 
+        public string LogoFileName
+        {
+            get { return _logoFileName; }
+        }
+
         public ChatClient(string ip, int port)
         {
             this._ip = ip;
             this._port = port;
-            new Thread(VerifyConnection).Start();
         }
 
 
@@ -58,6 +65,10 @@ namespace Chat
             _clientListener = new ClientListener(this);
             _clientListener.Run();
             clientPort = _clientListener.port;
+
+            _verifyThread = new Thread(VerifyConnection);
+            _verifyThread.Start();
+
             connected = true;
         }
 
@@ -96,15 +107,81 @@ namespace Chat
 
             this._statusMessage = dataXml.Root.Element("myself").Element("status").Value;
 
+            if (dataXml.Root.Element("myself").Element("img")!= null); 
+            this._logoFileName = dataXml.Root.Element("myself").Element("img").Value;
+            
             friends = new List<Friend>();
             foreach (var friend in dataXml.Root.Element("friends").Elements())
             {
                 XElement address = friend.Element("last_address_used");
                 XElement status = friend.Element("status");
-                friends.Add(new Friend(friend.Attribute("username").Value, address.Attribute("ip_address").Value,
-                                       Int32.Parse(address.Attribute("port").Value), status.Attribute("state").Value,
-                                       status.Value));
+                Friend friendItem = new Friend(friend.Attribute("username").Value, address.Attribute("ip_address").Value,
+                                            Int32.Parse(address.Attribute("port").Value),
+                                            status.Attribute("state").Value,
+                                            status.Value);
+                if (friend.Element("img") != null)
+                    friendItem.LogoFileName = friend.Element("img").Value;
+                friends.Add(friendItem);
             }
+
+            if (dataXml.Root.Element("offline_messages") != null && dataXml.Root.Element("offline_messages").Elements().Count() > 0)
+            {
+                new Thread(delegate()
+                {
+                    Thread.Sleep(100);
+                    try
+                    {
+                        if (ReceiveMessage != null)
+                            foreach (var element in dataXml.Root.Element("offline_messages").Elements())
+                            {
+                                ReceiveMessage(element.Attribute("from").Value, element.Value, DateTime.Parse(element.Attribute("date").Value));
+                            }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Exc: " + ex);
+//                        throw;
+                    }
+                }).Start();
+            }
+
+            if (dataXml.Root.Element("friend_requests") != null && dataXml.Root.Element("friend_requests").Elements().Count() > 0)
+            {
+                new Thread(delegate()
+                {
+                    Thread.Sleep(100);
+                    string friend = "";
+                    try
+                    {
+                        foreach (var element in dataXml.Root.Element("friend_requests").Elements())
+                        {
+                            friend = element.Attribute("username").Value;
+                            if (ConfirmFriendRequest != null && !ConfirmFriendRequest(friend, element.Value))
+                                DenyFriend(friend);
+                            else
+                            {
+                                AcceptFriend(friend);
+                            }
+//                            ReceiveMessage(element.Attribute("from").Value, element.Value, DateTime.Parse(element.Attribute("date").Value));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Exc: " + ex);
+                        //                        throw;
+                    }
+                }).Start();
+            }
+
+            //TODO implement
+//            foreach (var message in dataXml.Root.Element("offline_messages").Elements())
+//            {
+//                if (ReceiveMessage != null)
+//                {
+//                    ReceiveMessage(message.Attribute("from").Value, message.Value);
+//                }
+//            }
+
             return 0;
 
         }
@@ -128,15 +205,14 @@ namespace Chat
             if (!connected)
                 throw new NotConnectedException("You should Connect before Sending Friend Request");
 
-            //TODO modify
             Send(ServerOperation.FriendRequest, username, message);
             int response = ReadResponse();
-            if (response == 0)
-            {
-                string xmlFile = ReadString(true);
-                AddFrind(xmlFile);
-//                Notify(3, xmlFile);
-            }
+//            if (response == 0)
+//            {
+//                string xmlFile = ReadString(true);
+//                AddFrind(xmlFile);
+////                Notify(3, xmlFile);
+//            }
             Console.WriteLine("Friend Request Response: " + response);
             return response;
         }
@@ -148,17 +224,56 @@ namespace Chat
             var friend = dataXml.Root;
             XElement address = friend.Element("last_address_used");
             XElement status = friend.Element("status");
-            friends.Add(new Friend(friend.Attribute("username").Value, address.Attribute("ip_address").Value,
-                                    Int32.Parse(address.Attribute("port").Value), status.Attribute("state").Value,
-                                    status.Value));
+            Friend friendItem = new Friend(friend.Attribute("username").Value, address.Attribute("ip_address").Value,
+                                           Int32.Parse(address.Attribute("port").Value), status.Attribute("state").Value,
+                                           status.Value);
+            if (friend.Element("img") != null)
+                friendItem.LogoFileName = friend.Element("img").Value;
+            friends.Add(friendItem);
+
             if (Notify != null)
                 Notify(2, null);
         }
 
-    public void SignOut()
+        internal void AcceptFriend(string username, bool accepted = true)
         {
-            if(_tcpClient != null)
+//            string xmlString = ReadString(stream, true);
+//            _chatClient.AddFrind(xmlString);
+
+//
+
+            byte acceptResp = 1; //Failure
+            if (accepted)
+                acceptResp = 0; //Success
+            Send(ServerOperation.AcceptFriend, username, acceptResp);
+
+            int resp = ReadResponse();
+            if (accepted && resp == 0)
+            {
+                //Read friend xml string
+                string xmlString = ReadString(true);
+                AddFrind(xmlString);
+
+                if (Notify != null)
+                    Notify(2, null);
+            }
+
+        }
+
+        internal void DenyFriend(string username)
+        {
+            AcceptFriend(username, false);
+        }
+
+        public void SignOut()
+        {
+            connected = false;
+            if (_tcpClient != null)
                 _tcpClient.Close();
+            if (_clientListener != null)
+                _clientListener.Stop();
+//            if(_verifyThread != null && _verifyThread.IsAlive)
+//                _verifyThread.Abort();
         }
 
         //TODO from string to byte or int
@@ -177,24 +292,31 @@ namespace Chat
             var friend = GetFriend(username);
             if(friend != null)
             {
-                TcpClient friendClient = new TcpClient();
-                friendClient.Connect(friend.Ip, friend.Port);
+                try
+                {
+                    TcpClient friendClient = new TcpClient();
+                    friendClient.Connect(friend.Ip, friend.Port);
 
-                Console.WriteLine("Connecting to : " + friend.Port);
+                    Console.WriteLine("Connecting to : " + friend.Port);
 
-                Stream stream = friendClient.GetStream();
+                    Stream stream = friendClient.GetStream();
 
-                stream.WriteByte((byte)ClientOperation.ReceiveMessage);
+                    stream.WriteByte((byte)ClientOperation.ReceiveMessage);
 
-                byte[] b = Encoding.UTF8.GetBytes(UserName);
-                stream.WriteByte((byte)b.Length);
-                stream.Write(b, 0, b.Length);
+                    byte[] b = Encoding.UTF8.GetBytes(UserName);
+                    stream.WriteByte((byte)b.Length);
+                    stream.Write(b, 0, b.Length);
 
 
-                b = Encoding.UTF8.GetBytes(message);
-                //TODO change to int
-                stream.WriteByte((byte)b.Length);
-                stream.Write(b,0,b.Length);
+                    b = Encoding.UTF8.GetBytes(message);
+                    //TODO change to int
+                    stream.WriteByte((byte)b.Length);
+                    stream.Write(b, 0, b.Length);
+                }
+                catch (Exception ex)
+                {
+                    AddOfflineMessage(username, message);
+                }
             }
             //TODO else throw errors
         }
@@ -208,6 +330,17 @@ namespace Chat
             Send(ServerOperation.AddOfflineMessage, username);
             SendLongString(message);
             Console.WriteLine("Change Status Response: " + ReadResponse());
+        }
+
+        public string ChangeLogo(byte[] aBytes)
+        {
+            Send(ServerOperation.ChangeLogo);
+
+            Send(aBytes.Length);
+            _connStream.Write(aBytes, 0, aBytes.Length);
+            string filename = ReadString();
+            int resp = ReadResponse();
+            return filename;
         }
 
         private Friend GetFriend(string username)
@@ -276,10 +409,28 @@ namespace Chat
                             fileStream.Close(); 
                             return;
                         }
+                        int mb10 = 10*1024*1024; //10 megabytes (mem cache)
+                        if (length <= mb10)
+                        {
+                            b = new byte[length];
+                            fileStream.Read(b, 0, length); 
+                            stream.Write(b, 0, b.Length);
+                        }
+                        else
+                        {
+                            int total = length;
+                            b = new byte[mb10];
 
-                        b = new byte[length];
-                        fileStream.Read(b, 0, length); //TODO change this conversion
-                        stream.Write(b, 0, b.Length);
+                            while (total > 0)
+                            {
+                                int localTotal = mb10;
+                                if(total <= mb10)
+                                    localTotal = total;
+                                total -= localTotal;
+                                fileStream.Read(b, 0, localTotal); //TODO change this conversion
+                                stream.Write(b, 0, localTotal);
+                            }
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -384,7 +535,7 @@ namespace Chat
             }
         }
 
-        internal void UpdateFrindStatus(string username, string status, string statusMessage = null)
+        internal void UpdateFriendStatus(string username, string status, string statusMessage = null)
         {
             var friend = GetFriend(username);
             if (friend != null)
@@ -395,6 +546,15 @@ namespace Chat
             }
         }
 
+        internal void UpdateFriendLogo(string username, string filename)
+        {
+            var friend = GetFriend(username);
+            if (friend != null)
+            {
+                friend.LogoFileName = filename;
+            }
+        }
+
         public List<Friend> GetFriends()
         {
             return friends;
@@ -402,10 +562,11 @@ namespace Chat
 
         private void VerifyConnection()
         {
-            while (true)
+//            while (true)
+            while(connected)
             {
-                if (connected)
-                {
+//                if (connected)
+//                {
                     try
                     {
                         _tcpClient.Client.Send(new byte[0]);
@@ -416,8 +577,9 @@ namespace Chat
                         if (Notify != null)
                             Notify(1, "Connection Died"); //TODO change to Enum
                     }
-                }
+//                }
                 Thread.Sleep(1000);
+                Console.WriteLine("Verify");
             }
         }
 
@@ -450,12 +612,12 @@ namespace Chat
 
 #region callbacks
 
-        internal Action<string, string> ReceiveMessage = null;
+        internal Action<string, string, DateTime> ReceiveMessage = null;
         internal Func<string, long, bool> ConfirmatFileReceivement = null;
         internal Func<string, string> GetPath = null;
         internal Action<int, string> Notify = null;
         internal Func<string, string, bool> ConfirmFriendRequest = null; 
-        public void SetMessageReceiver(Action<string, string> method)
+        public void SetMessageReceiver(Action<string, string, DateTime> method)
         {
             ReceiveMessage = method;
         }

@@ -12,6 +12,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 using System.Diagnostics;
+using System.Drawing.Imaging;
 
 namespace Client
 {
@@ -208,6 +209,17 @@ namespace Client
                     //if signIn
                     this.textBox1.Text = username;
                     this.textBox2.Text = _chatClient.StatusMessage; 
+                    if(_chatClient.LogoFileName != "")
+                    {
+                        if (File.Exists(_chatClient.LogoFileName))
+                        {
+                            this.pictureBox1.Image = Image.FromFile(_chatClient.LogoFileName);
+                        }
+                        else
+                        {
+                            //TODO load image
+                        }
+                    }
 
                     //End Dinu!
                     LoadUserListForm();
@@ -218,15 +230,15 @@ namespace Client
 
         }
 
-        delegate void ReceiveMessageCallback(string username, string message);
+        delegate void ReceiveMessageCallback(string username, string message, DateTime date);
 
         //Start Dinu!  TODO improve
-        void ReceiveMessage(string username, string message)
+        void ReceiveMessage(string username, string message, DateTime date)
         {
             if (Application.OpenForms[0].InvokeRequired)
             {
                 ReceiveMessageCallback d = new ReceiveMessageCallback(ReceiveMessage);
-                this.Invoke(d, new object[] { username, message });
+                this.Invoke(d, new object[] { username, message, date });
             }
             else
             {
@@ -242,7 +254,7 @@ namespace Client
                             {
 //                                OpenForm.TopMost = true;
                                 OpenForm.Focus();
-                                temp.Receive_Msg_Auto(message);
+                                temp.Receive_Msg_Auto(message, date);
                                 //                                MessageBox.Show("Found");
                                 return;
                             }
@@ -252,7 +264,7 @@ namespace Client
                     //TODO send maybe my name and my/other logo rethink
                     Conversation convFriend = new Conversation(_chatClient, username, null, username, "Tmp Status"); //TODO modify
                     convFriend.Show();
-                    convFriend.Receive_Msg_Auto(message);
+                    convFriend.Receive_Msg_Auto(message, date);
                     //                    MessageBox.Show("Created new");
                 }
             }
@@ -260,6 +272,8 @@ namespace Client
             // Console.WriteLine("Received Message from: {0} \nMessage: {1}", username, message);
         }
 
+
+        delegate void RefreshListCallback();
         void Notify(int option, string message)
         {
             //Option:
@@ -276,7 +290,13 @@ namespace Client
 //                    Console.WriteLine("Connection Died:\n " + message);
                     break;
                 case 2:
-                    RefreshFriendsList();
+                    if (Application.OpenForms[0].InvokeRequired)
+                    {
+                        RefreshListCallback d = new RefreshListCallback(RefreshFriendsList);
+                        this.Invoke(d);
+                    }
+                    else
+                        RefreshFriendsList();
 //                    MessageBox.Show(message);
                     break;
                 case 3:
@@ -341,6 +361,12 @@ namespace Client
             
         }
 
+        private void SignOut()
+        {
+            if(_chatClient != null)
+                _chatClient.SignOut();
+        }
+
 
         //End Dinu!
 
@@ -392,7 +418,13 @@ namespace Client
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
+            if (_chatClient.LogoFileName != "")
+            {
+                this.pictureBox1.Image = Image.FromFile(_chatClient.LogoFileName);
+                //TODO if file not exists load from server
+            }
+            else
+                this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
             this.pictureBox1.Location = new System.Drawing.Point(10, 30);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(96, 98);
@@ -474,7 +506,6 @@ namespace Client
            listView1.Sorting = SortOrder.Ascending;
             listView1.AllowColumnReorder = true;
             listView1.SmallImageList = imageList1;
-            
 
             //comment
             this.listView1.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
@@ -704,56 +735,37 @@ namespace Client
             ListViewItem lwi = lw.SelectedItems[0];
             ListViewItem.ListViewSubItem lws = lwi.SubItems[1];
 
-            int ok = 1;
-            foreach (string temp in idNames)
-            {
-                if (temp == lws.Text)
+            foreach (Form OpenForm in Application.OpenForms)
                 {
-                    ok = 0;
-                    break;
+                    if (OpenForm is Conversation)
+                    {
+                        Conversation temp = (Conversation)OpenForm;
+                        if (lws.Text == temp.id)
+                        {
+                            OpenForm.Focus();
+                            return;
+                        }
+                    }
+
+
                 }
-            }
-            if (ok == 1)
-            {
-                idNames.Add(lws.Text);
+//            int ok = 1;
+//            foreach (string temp in idNames)
+//            {
+//                if (temp == lws.Text)
+//                {
+//                    ok = 0;
+//                    break;
+//                }
+//            }
+//            if (ok == 1)
+//            {
+//                idNames.Add(lws.Text);
                 string name = listView1.SelectedItems[0].SubItems[1].Text;
                 string statusMes = listView1.SelectedItems[0].SubItems[2].Text;
                 Conversation conv = new Conversation(_chatClient, lws.Text, myLogo, name, statusMes);
                 conv.Show();
 
-            }
-            else
-            {
-                //TODO inspect why null, null, null.
-                int marked = 0;
-                //string name = listView1.SelectedItems[0].SubItems[1].Text;
-                Conversation temp1 = new Conversation(null, null, null, null, null);
-                foreach (Form OpenForm in Application.OpenForms)
-                {
-                    if (OpenForm.GetType() == temp1.GetType())
-                    {
-
-                        if (OpenForm is Conversation)
-                        {
-                            Conversation temp = (Conversation)OpenForm;
-                            if (lws.Text == temp.id)
-                            {
-//                                OpenForm.TopMost = true;
-                                OpenForm.Focus();
-//                                marked = 1;
-                                break;
-                            }
-//                            if (marked == 0)
-//                            {
-//                                OpenForm.TopMost = false;
-//                            }
-
-                        }
-
-                    }
-
-                }
-            }
 
         }
 
@@ -789,8 +801,9 @@ namespace Client
             this.Controls.Remove(this.listView1);
             this.Controls.Remove(this.menuStrip1);
             this.notifyIcon1.Visible = false;
-            _chatClient.SignOut();
+//            _chatClient.SignOut();
 
+            SignOut();
             InitializeComponent();
             AlignWindow();
         }
@@ -805,8 +818,9 @@ namespace Client
             this.Controls.Remove(this.listView1);
             this.Controls.Remove(this.menuStrip1);
             this.notifyIcon1.Visible = false;
-            _chatClient.SignOut();
+//            _chatClient.SignOut();
 
+            SignOut();
             InitializeComponent();
             AlignWindow();
         }
@@ -827,10 +841,6 @@ namespace Client
                 pointerToMainForm.ShowMessageNotifyIcon(" Restored from tray");
                 WindowState = FormWindowState.Normal;
             }
-
-
-
-
         }
 
         private void ChangeStatus(object sender, KeyPressEventArgs e)
@@ -852,48 +862,70 @@ namespace Client
             open.Filter = "Image Files(*.jpg; *.jpeg; *.gif; *.bmp)|*.jpg; *.jpeg; *.gif; *.bmp";
             if (open.ShowDialog() == DialogResult.OK)
             {
+
                 myLogo = new Bitmap(open.FileName);
+                Rectangle rect;
+                if (myLogo.Width < myLogo.Height)
+                {
+                    rect = new Rectangle(0, (myLogo.Height-myLogo.Width)/2, myLogo.Width, myLogo.Width);
+                }
+                else
+                {
+                    rect = new Rectangle((myLogo.Width - myLogo.Height) / 2, 0, myLogo.Height, myLogo.Height);
+                }
+
+                myLogo = myLogo.Clone(rect, myLogo.PixelFormat);
+
+                //TODO to thread
+                MemoryStream ms = new MemoryStream();
+                myLogo.Save(ms, ImageFormat.Bmp);
+                string filename = _chatClient.ChangeLogo(ms.ToArray());
+//                byte[] bitmapData = ms.ToArray();
+                myLogo.Save(filename, ImageFormat.Bmp);
+
                 pictureBox1.Image = myLogo;
             }
         }
 
         private void ExitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.signOutToolStripMenuItem_Click(sender, e);
-            Process[] processlist = Process.GetProcesses();
-
-            foreach(Process theprocess in processlist){
-                string infoProcess = "Process: " + theprocess.ProcessName + " ID: " + theprocess.Id;
-                if (theprocess.ProcessName.Contains("Client"))
-                {
-                    //MessageBox.Show(infoProcess);
-                    theprocess.Kill();    
-                }
-                
-
-            }
+//            this.signOutToolStripMenuItem_Click(sender, e);
+//            Process[] processlist = Process.GetProcesses();
+//
+//            foreach(Process theprocess in processlist){
+//                string infoProcess = "Process: " + theprocess.ProcessName + " ID: " + theprocess.Id;
+//                if (theprocess.ProcessName.Contains("Client"))
+//                {
+//                    //MessageBox.Show(infoProcess);
+//                    theprocess.Kill();    
+//                }
+//            }
+            SignOut();
             this.Close();
             this.Dispose();
+//            Application.Exit();
         }
 
         private void ExitClick(object sender, EventArgs e)
         {
-            this.signOutToolStripMenuItem_Click(sender, e);
-            Process[] processlist = Process.GetProcesses();
-
-            foreach (Process theprocess in processlist)
-            {
-                string infoProcess = "Process: " + theprocess.ProcessName + " ID: " + theprocess.Id;
-                if (theprocess.ProcessName.Contains("Client"))
-                {
-                    //MessageBox.Show(infoProcess);
-                    theprocess.Kill();
-                }
-
-
-            }
+//            this.signOutToolStripMenuItem_Click(sender, e);
+//            Process[] processlist = Process.GetProcesses();
+//
+//            foreach (Process theprocess in processlist)
+//            {
+//                string infoProcess = "Process: " + theprocess.ProcessName + " ID: " + theprocess.Id;
+//                if (theprocess.ProcessName.Contains("Client"))
+//                {
+//                    //MessageBox.Show(infoProcess);
+//                    theprocess.Kill();
+//                }
+//
+//
+//            }
+            SignOut();
             this.Close();
             this.Dispose();
+//            Application.Exit();
         }
 
         private void listView_ColumnWidthChanging(object sender, ColumnWidthChangingEventArgs e)

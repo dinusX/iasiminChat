@@ -55,11 +55,11 @@ namespace Client
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.addFriendToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.changeLogoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.signOutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.addFriendToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
@@ -258,6 +258,14 @@ namespace Client
             this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
             this.optionsToolStripMenuItem.Text = "Options";
             // 
+            // addFriendToolStripMenuItem
+            // 
+            this.addFriendToolStripMenuItem.Name = "addFriendToolStripMenuItem";
+            this.addFriendToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
+            this.addFriendToolStripMenuItem.Text = "Add Friend";
+            this.addFriendToolStripMenuItem.Visible = false;
+            this.addFriendToolStripMenuItem.Click += new System.EventHandler(this.addFriendToolStripMenuItem_Click);
+            // 
             // settingsToolStripMenuItem
             // 
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
@@ -287,14 +295,6 @@ namespace Client
             this.exitToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.ExitToolStripMenuItem_Click);
-            // 
-            // addFriendToolStripMenuItem
-            // 
-            this.addFriendToolStripMenuItem.Name = "addFriendToolStripMenuItem";
-            this.addFriendToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
-            this.addFriendToolStripMenuItem.Text = "Add Friend";
-            this.addFriendToolStripMenuItem.Click += new System.EventHandler(this.addFriendToolStripMenuItem_Click);
-            this.addFriendToolStripMenuItem.Visible = false;
             // 
             // imageList1
             // 

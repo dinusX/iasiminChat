@@ -23,6 +23,7 @@ namespace Chat
         private string _ip;
         private string _status;
         private string _statusMessage = "";
+        private string _logoFileName = "";
 
         public string Name
         {
@@ -47,6 +48,12 @@ namespace Chat
         {
             get { return _statusMessage; }
             set { _statusMessage = value; }
+        }
+
+        public string LogoFileName
+        {
+            get { return _logoFileName; }
+            set { _logoFileName = value; }
         }
 
         public bool Online()
