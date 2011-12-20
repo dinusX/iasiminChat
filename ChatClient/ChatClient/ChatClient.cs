@@ -60,9 +60,11 @@ namespace Chat
 
             _connStream = _tcpClient.GetStream();
 
+            string ip = _tcpClient.Client.LocalEndPoint.ToString().Split(new char[] {':'}).First();
+
             Console.WriteLine("Connected");
 
-            _clientListener = new ClientListener(this);
+            _clientListener = new ClientListener(this, ip);
             _clientListener.Run();
             clientPort = _clientListener.port;
 
@@ -341,6 +343,33 @@ namespace Chat
             string filename = ReadString();
             int resp = ReadResponse();
             return filename;
+        }
+
+        public bool GetLogo(string filename)
+        {
+            Send(ServerOperation.GetLogo, filename);
+            int length = ReadInt();
+            int tmp = length;
+            int k = 0;
+            byte[] b = new byte[tmp];
+
+            try
+            {
+                while (tmp > 0)
+                {
+                    k = _connStream.Read(b, length - tmp, tmp);
+                    tmp -= k;
+                }
+                FileStream fileStream = new FileStream(filename, FileMode.Truncate, FileAccess.Write);
+                fileStream.Write(b, 0, length);
+                fileStream.Close();
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private Friend GetFriend(string username)

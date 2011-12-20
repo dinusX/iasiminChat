@@ -12,7 +12,7 @@ namespace Chat
 {
     class ClientListener
     {
-        private static string ip = "127.0.0.1";
+        private static string _ip = "127.0.0.1";
 
         public int port = 10000; //TODO Change to Random Port
 
@@ -20,11 +20,12 @@ namespace Chat
         private Thread _mainThread = null;
         private TcpListener _server = null;
 
-        public ClientListener(ChatClient chatClient)
+        public ClientListener(ChatClient chatClient, string ip)
         {
             if (chatClient == null)
                 throw new NullReferenceException("Invalid chatClient parameter");
             _chatClient = chatClient;
+            _ip = ip;
         }
 
         public void Run()
@@ -54,10 +55,10 @@ namespace Chat
             try
             {
                 Console.WriteLine("Port : {0}",port);
-                _server = new TcpListener(IPAddress.Parse(ip), port);
+                _server = new TcpListener(IPAddress.Parse(_ip), port);
 
                 _server.Start(1000);
-                Console.WriteLine("Server started running at {0}:{1}\n", ip, port);
+                Console.WriteLine("Server started running at {0}:{1}\n", _ip, port);
 
                 _mainThread = new Thread(() => ListenToConnections(_server));
                 _mainThread.Start();

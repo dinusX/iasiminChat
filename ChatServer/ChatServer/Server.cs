@@ -1099,7 +1099,7 @@ namespace ChatServer
                                 }
 
                                 string bmpName;
-                                string bmpContent;
+                                byte[] bmpContent;
 
                                 try { bmpName = (string)this.Read(stream, typeof(string)); }
                                 catch
@@ -1109,7 +1109,7 @@ namespace ChatServer
                                     break;
                                 }
 
-                                try { bmpContent = File.ReadAllText(@"files\images\" + bmpName, Encoding.UTF8); }
+                                try { bmpContent = File.ReadAllBytes(@"files\images\" + bmpName); }
                                 catch
                                 {
                                     response = 1;
@@ -1117,7 +1117,10 @@ namespace ChatServer
                                     break;
                                 }
 
-                                try { this.Write(stream, bmpContent, false); }
+                                try { 
+                                    this.Write(stream, bmpContent.Length);
+                                    stream.Write(bmpContent, 0 , bmpContent.Length);        
+                                }
                                 catch
                                 {
                                     command = 2;
